@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>deleteceipt — Documentation</title>
+  <meta name="description" content="Complete documentation for deleteceipt: motivation, legal foundation, cryptographic design, and full API reference." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0f1117;
+      --surface:    #1a1d27;
+      --surface2:   #141620;
+      --border:     #2a2d3e;
+      --accent:     #6c63ff;
+      --accent-lo:  rgba(108,99,255,0.12);
+      --accent2:    #00d4aa;
+      --accent2-lo: rgba(0,212,170,0.10);
+      --danger:     #ff4f4f;
+      --warn:       #f59e0b;
+      --text:       #e2e4f0;
+      --muted:      #7b7f9e;
+      --code-bg:    #12141f;
+      --radius:     12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,17,23,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-logo {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      margin-left: auto;
+      align-items: center;
+    }
+    .nav-links a {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links .btn-nav {
+      background: var(--accent);
+      color: #fff;
+      padding: 7px 18px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .nav-links .btn-nav:hover { opacity: 0.88; text-decoration: none; }
+
+    /* ── LAYOUT ── */
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      max-width: 1200px;
+      margin: 0 auto;
+      gap: 0;
+      min-height: calc(100vh - 60px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 32px 20px 48px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .sidebar-section {
+      margin-bottom: 28px;
+    }
+    .sidebar-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 8px;
+      margin-bottom: 8px;
+    }
+    .sidebar a {
+      display: block;
+      padding: 5px 8px;
+      font-size: 13.5px;
+      color: var(--muted);
+      border-radius: 6px;
+      line-height: 1.4;
+    }
+    .sidebar a:hover { color: var(--text); background: var(--surface); text-decoration: none; }
+    .sidebar a.active { color: var(--accent); background: var(--accent-lo); font-weight: 600; }
+
+    /* ── CONTENT ── */
+    .content {
+      padding: 60px 64px 120px;
+      max-width: 860px;
+    }
+
+    /* ── SECTION ── */
+    .doc-section {
+      margin-bottom: 80px;
+    }
+    .section-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--accent-lo);
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .section-eyebrow.green {
+      background: var(--accent2-lo);
+      border-color: rgba(0,212,170,0.25);
+      color: var(--accent2);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -1.2px;
+      line-height: 1.12;
+      margin-bottom: 20px;
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      margin-top: 56px;
+      padding-top: 0;
+    }
+    h2:first-child { margin-top: 0; }
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 36px;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #c8cbde;
+      margin-bottom: 18px;
+      max-width: 720px;
+    }
+    p:last-child { margin-bottom: 0; }
+
+    strong { color: var(--text); font-weight: 600; }
+    em { color: var(--accent2); font-style: italic; }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 18px;
+    }
+    li {
+      color: #c8cbde;
+      margin-bottom: 6px;
+    }
+    li strong { color: var(--text); }
+
+    /* ── PULL QUOTE ── */
+    .pull-quote {
+      border-left: 3px solid var(--accent);
+      padding: 18px 24px;
+      margin: 32px 0;
+      background: var(--accent-lo);
+      border-radius: 0 8px 8px 0;
+    }
+    .pull-quote p {
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--text);
+      margin: 0;
+    }
+    .pull-quote cite {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+      font-style: normal;
+    }
+    .pull-quote.green {
+      border-left-color: var(--accent2);
+      background: var(--accent2-lo);
+    }
+
+    /* ── CALLOUT ── */
+    .callout {
+      display: flex;
+      gap: 14px;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      margin: 24px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout-body { color: #c8cbde; }
+    .callout-body strong { color: var(--text); }
+    .callout.info { background: var(--accent-lo); border: 1px solid rgba(108,99,255,0.2); }
+    .callout.warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); }
+    .callout.danger { background: rgba(255,79,79,0.08); border: 1px solid rgba(255,79,79,0.2); }
+    .callout.success { background: var(--accent2-lo); border: 1px solid rgba(0,212,170,0.2); }
+
+    /* ── CODE ── */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.65;
+      margin: 20px 0;
+      position: relative;
+    }
+    code {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.875em;
+    }
+    pre code {
+      font-size: inherit;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    p code, li code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      color: var(--accent2);
+    }
+
+    .code-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    /* syntax coloring */
+    .kw  { color: #c792ea; }
+    .fn  { color: #82aaff; }
+    .st  { color: #c3e88d; }
+    .cm  { color: #546e7a; font-style: italic; }
+    .nb  { color: var(--accent2); }
+    .op  { color: #89ddff; }
+    .num { color: #f78c6c; }
+
+    /* ── FIELD TABLE ── */
+    .field-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13.5px;
+    }
+    .field-table th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border-bottom: 2px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    .field-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .field-table tr:last-child td { border-bottom: none; }
+    .field-table .field-name { font-family: monospace; color: var(--accent2); font-size: 12.5px; }
+    .field-table .field-type { color: var(--accent); font-size: 12px; }
+    .field-table .field-desc { color: #c8cbde; }
+    .field-table .field-note { font-size: 12px; color: var(--muted); display: block; margin-top: 3px; }
+
+    /* ── COMPARISON TABLE ── */
+    .cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 14px;
+    }
+    .cmp-table th {
+      padding: 12px 16px;
+      background: var(--surface2);
+      border-bottom: 2px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    .cmp-table th:first-child { text-align: left; }
+    .cmp-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      color: #c8cbde;
+    }
+    .cmp-table td:first-child { text-align: left; font-weight: 500; color: var(--text); }
+    .cmp-table tr:last-child td { border-bottom: none; }
+    .badge-yes { color: var(--accent2); font-weight: 600; }
+    .badge-no  { color: var(--muted); }
+    .badge-partial { color: var(--warn); }
+
+    /* ── TIMELINE ── */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+      margin: 28px 0;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--border);
+    }
+    .tl-item {
+      position: relative;
+      margin-bottom: 24px;
+    }
+    .tl-item::before {
+      content: '';
+      position: absolute;
+      left: -26px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+    }
+    .tl-item.green::before { background: var(--accent2); }
+    .tl-item.warn::before { background: var(--warn); }
+    .tl-time {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 4px;
+    }
+    .tl-text { color: #c8cbde; font-size: 14px; }
+    .tl-text strong { color: var(--text); }
+
+    /* ── CHAIN VISUAL ── */
+    .chain-visual {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 28px 0;
+    }
+    .chain-entry {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      position: relative;
+    }
+    .chain-entry + .chain-entry { margin-top: 0; border-top: none; border-radius: 0; }
+    .chain-entry:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+    .chain-entry:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+    .chain-seq {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+    .chain-fields {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 3px 14px;
+      font-size: 12.5px;
+      font-family: monospace;
+    }
+    .chain-key { color: var(--muted); }
+    .chain-val { color: var(--accent2); word-break: break-all; }
+    .chain-val.hash { color: var(--accent); }
+    .chain-arrow {
+      text-align: center;
+      padding: 6px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* ── STEPS ── */
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+      margin: 24px 0;
+    }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .steps li:last-child { border-bottom: none; }
+    .steps li::before {
+      content: counter(step);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      background: var(--accent-lo);
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+    .step-body { flex: 1; }
+    .step-title { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .step-desc { font-size: 14px; color: #c8cbde; }
+
+    /* ── DIVIDER ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 60px 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+      padding: 40px 40px;
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); text-decoration: none; }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; margin-left: auto; }
+
+    @media (max-width: 900px) {
+      .docs-layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .content { padding: 40px 24px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">delete<span>ceipt</span></a>
+  <div class="nav-links">
+    <a href="docs.html" style="color:var(--text)">Docs</a>
+    <a href="donate.html">Donate</a>
+    <a href="https://pypi.org/project/deleteceipt/" target="_blank">PyPI</a>
+    <a href="https://github.com/deleteceipt/deleteceipt" target="_blank" class="btn-nav">GitHub ↗</a>
+  </div>
+</nav>
+
+<div class="docs-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Why It Exists</div>
+      <a href="#motivation">The Delete Button Lies</a>
+      <a href="#legal">Legal Foundation</a>
+      <a href="#hard">Why Deletion Is Hard</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Architecture</div>
+      <a href="#deletion-first">Deletion-First Design</a>
+      <a href="#cryptographic">Cryptographic Assurance</a>
+      <a href="#timing">The Timing Insight</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Reference</div>
+      <a href="#receipt-anatomy">Receipt Anatomy</a>
+      <a href="#hmac">HMAC — Zero Dependencies</a>
+      <a href="#ecdsa">ECDSA — Third-Party Proof</a>
+      <a href="#audit-log">Audit Log</a>
+      <a href="#cli">CLI Reference</a>
+      <a href="#fastapi">FastAPI Integration</a>
+      <a href="#limits">Honest Limits</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">About</div>
+      <a href="#patent">Patent &amp; License</a>
+    </div>
+  </aside>
+
+  <!-- ── CONTENT ── -->
+  <main class="content">
+
+    <!-- MOTIVATION -->
+    <section class="doc-section" id="motivation">
+      <div class="section-eyebrow">Why It Exists</div>
+      <h1>The delete button <em>lies.</em></h1>
+
+      <p>
+        When a user clicks "Delete my account," your system sends a confirmation email.
+        The email says their data is gone. But what does your database actually do?
+        It sets a <code>deleted_at</code> timestamp. The row stays. The backups stay.
+        The replicas stay. The search index stays. The machine-learning training set stays.
+        The confirmation email is a <strong>promise</strong> — one that the technical
+        architecture routinely breaks.
+      </p>
+
+      <div class="pull-quote">
+        <p>Imagine discovering that an email address you entered into a single form seven years
+        ago now lives in seventeen separate database tables, four backup systems, two search
+        indices, a data warehouse, and a production machine-learning model — and that the
+        team responsible for "deleting" it changed the <code>deleted_at</code> flag on
+        exactly one of them.</p>
+        <cite>— <em>The Right to Be Forgotten</em>, Preface</cite>
+      </div>
+
+      <p>
+        The 17-tables scenario is not a hypothetical. It is a pattern that emerges
+        naturally from how modern applications are built: event sourcing, read replicas,
+        ETL pipelines, caches, audit logs, and analytical stores all accumulate copies of
+        data that no single deletion command reaches. The confirmation email goes out,
+        the compliance checkbox gets ticked, and seventeen copies remain.
+      </p>
+
+      <p>
+        <strong>deleteceipt</strong> does not solve all of these problems. No library can.
+        But it solves a specific, foundational one: when deletion genuinely happens — when
+        the file bytes are gone from your tmpfs volume, when <code>os.unlink</code>
+        returns, when the job directory is wiped — it produces a
+        <strong>cryptographically signed receipt</strong> that proves the content existed
+        and was deleted. Not a promise. Proof.
+      </p>
+
+      <h3>The gap between law and engineering</h3>
+      <p>
+        Privacy law has evolved faster than engineering practice. GDPR Article 17 has been
+        in force since 2018. Most engineering teams responded by adding a
+        <code>deleted_at</code> column and a cron job. That is not what the regulation
+        requires — and courts are beginning to notice. The gap between legal compliance
+        and cryptographic proof is exactly where deleteceipt operates.
+      </p>
+
+      <div class="callout info">
+        <div class="callout-icon">📖</div>
+        <div class="callout-body">
+          The full argument — legal, philosophical, and technical — is developed in
+          <strong><em>The Right to Be Forgotten</em></strong> by Yoonil Choi
+          (Kindle: <a href="https://www.amazon.com/dp/B0GP35C79Q" target="_blank">B0GP35C79Q</a>,
+          Paperback: <a href="https://www.amazon.com/dp/B0GWDJ2B71" target="_blank">B0GWDJ2B71</a>).
+          This documentation draws on the book's core arguments.
+        </div>
+      </div>
+    </section>
+
+    <!-- LEGAL -->
+    <section class="doc-section" id="legal">
+      <div class="section-eyebrow">Legal Foundation</div>
+      <h2>The right to erasure</h2>
+
+      <p>
+        On May 13, 2014, the Court of Justice of the European Union handed down
+        <em>Google Spain SL, Google Inc. v. Agencia Española de Protección de Datos</em>
+        (Case C-131/12). A Spanish lawyer named Mario Costeja González had asked Google
+        to delist newspaper articles about a 1998 property auction that resolved a debt
+        he had long since paid. Google refused. The Spanish data protection authority
+        ordered them to comply. The CJEU agreed.
+      </p>
+
+      <p>
+        The ruling did something technically modest — it required Google to delist links
+        from search results — but legally seismic. It established that individuals have
+        a right to have information about them made inaccessible, even when the underlying
+        data is true, even when it was lawfully published, even when the data controller
+        is not the original publisher. <em>The right to be forgotten</em> entered European
+        law as a binding principle.
+      </p>
+
+      <h3>GDPR Article 17 — the six grounds</h3>
+      <p>
+        Four years later, GDPR codified this into Article 17. An individual may demand
+        erasure when <em>any one</em> of six conditions holds:
+      </p>
+      <ol>
+        <li>The data is no longer necessary for the purpose it was collected.</li>
+        <li>The individual withdraws consent (where consent was the lawful basis).</li>
+        <li>The individual objects under Article 21 and there are no overriding legitimate grounds.</li>
+        <li>The data was unlawfully processed.</li>
+        <li>Erasure is required to comply with a Union or Member State legal obligation.</li>
+        <li>The data was collected in relation to services offered directly to a child.</li>
+      </ol>
+
+      <p>
+        The controller must act <em>without undue delay</em>. The regulation does not define
+        this as a number of days. Courts have interpreted it as "promptly and certainly,"
+        which in practice means faster than your next weekly backup rotation.
+      </p>
+
+      <h3>What "erasure" means in practice</h3>
+      <p>
+        Here is where the law meets engineering, and where most implementations fail.
+        "Erasure" under GDPR does not mean setting <code>is_deleted = true</code>. It means
+        the data must be made permanently inaccessible. Backups, replicas, caches, derived
+        datasets, and analytical stores are all in scope. The obligation follows the data,
+        not the primary database.
+      </p>
+
+      <div class="callout warn">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>Soft deletes are not erasure.</strong> A soft-deleted record is still
+          stored, still backed up, still queryable by anyone with database access, and still
+          producible in discovery. GDPR enforcement actions have treated soft-deletion as
+          non-compliance.
+        </div>
+      </div>
+
+      <h3>The global spread</h3>
+      <p>
+        The right to erasure is no longer only a European concept:
+      </p>
+      <ul>
+        <li><strong>California (CCPA/CPRA)</strong> — Right to delete, with verification requirements and a 45-day response window.</li>
+        <li><strong>Brazil (LGPD Art. 18)</strong> — Deletion of unnecessary or excessive data upon request.</li>
+        <li><strong>Thailand (PDPA)</strong> — Erasure rights with controller obligations structurally similar to GDPR.</li>
+        <li><strong>India (DPDPA 2023)</strong> — Erasure of personal data when the purpose of processing is fulfilled, or consent is withdrawn.</li>
+      </ul>
+
+      <p>
+        If your service is global, you are almost certainly operating under at least one
+        of these regimes. The compliance burden is not going away. The question is how you
+        meet it.
+      </p>
+    </section>
+
+    <!-- WHY HARD -->
+    <section class="doc-section" id="hard">
+      <div class="section-eyebrow">Why Deletion Is Hard</div>
+      <h2>Why "deleted" is rarely what it seems</h2>
+
+      <p>
+        The filesystem makes deletion look easy. You call <code>os.unlink(path)</code>
+        and the file disappears. But <code>unlink</code> does not erase data — it removes
+        the directory entry that points to the inode. The inode still exists. The data
+        blocks are still on disk, marked as available for reuse, not overwritten. On a
+        lightly loaded system, those bytes may persist for hours or days before a new
+        write overwrites them.
+      </p>
+
+      <p>
+        On solid-state drives, the problem is worse. SSDs use a Flash Translation Layer
+        (FTL) that maps logical block addresses to physical NAND pages. When you overwrite
+        a block, the FTL writes a new page and marks the old one for garbage collection.
+        Wear-leveling algorithms deliberately spread writes across cells to extend device
+        life — which means the "deleted" copy may be physically preserved in a different
+        cell, untouched, until the garbage collector reaches it.
+      </p>
+
+      <h3>The seven layers of persistence</h3>
+      <p>
+        Beyond the filesystem, data persists through layers that each require separate,
+        deliberate deletion:
+      </p>
+      <ul>
+        <li><strong>Write-ahead logs (WAL)</strong> — Postgres, MySQL, SQLite all write changes to a WAL before applying them. The WAL may retain deleted data for days if archiving is enabled.</li>
+        <li><strong>Read replicas</strong> — Replication lag means a deletion committed on the primary may not propagate to replicas for seconds or minutes. An application reading from a replica may serve deleted data.</li>
+        <li><strong>Streaming backups</strong> — Point-in-time recovery systems snapshot the database continuously. A deletion removes the row from future snapshots but not from prior ones, which typically have retention policies measured in weeks or months.</li>
+        <li><strong>CDN and proxy caches</strong> — A file served through a CDN may be cached at dozens of edge nodes globally. A deletion at the origin does not invalidate these copies unless you issue an explicit purge.</li>
+        <li><strong>Search indices</strong> — Elasticsearch, OpenSearch, and similar systems build inverted indices from your data. Deletion from the primary database does not remove the document from the index.</li>
+        <li><strong>ETL and data warehouses</strong> — Data pipelines that load into Snowflake, BigQuery, or Redshift typically copy at the row level. The warehouse may not support deletion, or deletion may require expensive partition-level operations.</li>
+        <li><strong>Machine learning models</strong> — If a model was trained on data that included the deleted record, the record is encoded in the model weights. Technically, the only way to fully erase it is to retrain the model from scratch on a dataset that excludes the record.</li>
+      </ul>
+
+      <div class="pull-quote green">
+        <p>The problem is not that developers are careless. The problem is that distributed
+        systems accumulate copies of data as a byproduct of achieving durability, availability,
+        and performance. Deletion must be explicitly designed for — it does not happen by default.</p>
+        <cite>— <em>The Right to Be Forgotten</em>, Chapter 4</cite>
+      </div>
+
+      <h3>What deleteceipt can and cannot claim</h3>
+      <p>
+        A deletion receipt proves that a specific file — identified by its SHA-256 hash —
+        was deleted from the system that issued the receipt, at the recorded timestamp.
+        It does not prove that the data does not exist anywhere else. It does not reach
+        backups, replicas, or downstream systems.
+      </p>
+      <p>
+        Used within a <strong>deletion-first architecture</strong> — where data is never
+        written to persistent storage in the first place — a receipt can cover the full
+        scope of the data's existence. That is the design pattern this library is built for.
+      </p>
+    </section>
+
+    <!-- DELETION FIRST -->
+    <section class="doc-section" id="deletion-first">
+      <div class="section-eyebrow">Architecture</div>
+      <h2>Deletion-first architecture</h2>
+
+      <p>
+        Deletion-first is a design philosophy: instead of building persistent storage and
+        then trying to delete from it, you build with ephemeral storage as the default and
+        treat persistence as the exceptional case that requires explicit justification.
+        The difference sounds subtle. The implementation consequences are significant.
+      </p>
+
+      <h3>Ephemeral compute storage</h3>
+      <p>
+        The most direct implementation: run your processing jobs on <code>tmpfs</code>
+        — a RAM-backed filesystem that is zeroed on process exit. Files written to tmpfs
+        never touch disk and cannot be recovered after the process ends. On Linux,
+        <code>/tmp</code> is often tmpfs by default; on production systems, you mount it
+        explicitly:
+      </p>
+      <pre><code><span class="cm"># Docker: mount a tmpfs volume for job working directories</span>
+docker run \
+  --mount type=tmpfs,destination=/jobs,tmpfs-size=2g \
+  my-processing-image</code></pre>
+
+      <p>
+        In Kubernetes, <code>emptyDir</code> with the <code>memory</code> medium
+        achieves the same result:
+      </p>
+      <pre><code>volumes:
+  - name: job-scratch
+    emptyDir:
+      medium: Memory
+      sizeLimit: 2Gi</code></pre>
+
+      <h3>TTL-by-default datastores</h3>
+      <p>
+        For data that must survive beyond a single process, choose stores that expire
+        records automatically rather than requiring explicit deletion:
+      </p>
+      <ul>
+        <li><strong>Redis <code>SETEX</code></strong> — Set with expiry in seconds. The key is gone when the TTL fires, no application code required. Use this for session data, temporary tokens, processing results.</li>
+        <li><strong>DynamoDB TTL</strong> — An <code>expires_at</code> epoch attribute causes DynamoDB to delete the item automatically, without consuming write capacity. Items are typically removed within 48 hours of expiry.</li>
+        <li><strong>Kafka <code>retention.ms</code></strong> — Set a retention policy at the topic level. Messages older than the retention window are deleted from all partitions automatically. Configure this to match your compliance window, not Kafka's defaults.</li>
+      </ul>
+
+      <h3>Data minimization</h3>
+      <p>
+        The best data to delete is data you never stored. Before writing a field, ask:
+        is this field required for the current processing step, or am I storing it
+        "in case it's useful later"? The latter is a liability, not an asset. GDPR
+        Article 5(1)(c) calls this <em>data minimization</em> — collect only what is
+        adequate, relevant, and limited to what is necessary.
+      </p>
+      <p>
+        In a document-processing context, this typically means:
+      </p>
+      <ul>
+        <li>Accept the file into a tmpfs staging area.</li>
+        <li>Extract only the fields the job requires. Discard the rest.</li>
+        <li>Run processing on the extracted fields.</li>
+        <li>Delete the original file and any intermediate representations before returning the result.</li>
+        <li>Issue a deletion receipt covering this lifecycle.</li>
+      </ul>
+
+      <h3>One-job-one-directory isolation</h3>
+      <p>
+        Isolate each processing job in its own directory. This makes deletion atomic:
+        a single <code>shutil.rmtree(job_dir)</code> removes all inputs, intermediates,
+        and outputs in one operation. There is no risk of leaving behind a stray temporary
+        file in a shared directory. The receipt records the path and size of everything
+        that was removed.
+      </p>
+      <pre><code><span class="kw">import</span> shutil, os
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">from</span> deleteceipt.receipt <span class="kw">import</span> compute_file_hash, issue_receipt
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timezone
+
+<span class="fn">def</span> <span class="fn">process_job</span>(job_id: str, file_bytes: bytes, signing_key: str) <span class="op">-></span> dict:
+    uploaded_at = datetime.now(timezone.utc)
+
+    <span class="cm"># Hash before writing — this is the commitment</span>
+    file_hash = compute_file_hash(file_bytes)
+
+    <span class="cm"># Isolated job directory (on tmpfs in production)</span>
+    job_dir = Path(<span class="st">f"/jobs/{job_id}"</span>)
+    job_dir.mkdir(parents=True)
+    input_path = job_dir / <span class="st">"input.bin"</span>
+    input_path.write_bytes(file_bytes)
+
+    <span class="cm"># ... run processing ...</span>
+    processing_completed_at = datetime.now(timezone.utc)
+
+    <span class="cm"># Collect file inventory before deletion</span>
+    files_deleted = [
+        {<span class="st">"path"</span>: str(p.relative_to(job_dir)),
+         <span class="st">"size_bytes"</span>: p.stat().st_size,
+         <span class="st">"role"</span>: <span class="st">"input"</span>}
+        <span class="kw">for</span> p <span class="kw">in</span> job_dir.rglob(<span class="st">"*"</span>) <span class="kw">if</span> p.is_file()
+    ]
+
+    <span class="cm"># Atomic delete</span>
+    shutil.rmtree(job_dir)
+    deleted_at = datetime.now(timezone.utc)
+
+    <span class="kw">return</span> issue_receipt(
+        job_id=job_id,
+        file_hash=file_hash,
+        uploaded_at=uploaded_at,
+        processing_completed_at=processing_completed_at,
+        deleted_at=deleted_at,
+        signing_key=signing_key,
+        files_deleted=files_deleted,
+    )</code></pre>
+    </section>
+
+    <!-- CRYPTOGRAPHIC ASSURANCE -->
+    <section class="doc-section" id="cryptographic">
+      <div class="section-eyebrow">Cryptographic Assurance</div>
+      <h2>How cryptographic proof works</h2>
+
+      <p>
+        The library's cryptographic design rests on four primitives: SHA-256 for content
+        commitment, HMAC-SHA256 or ECDSA for signing, canonical JSON for deterministic
+        serialization, and SHA-256 again for hash chaining. Each is a standard, battle-tested
+        construction. The novel part is how they are composed — specifically, the timing
+        of the hash commitment.
+      </p>
+
+      <h3>SHA-256: content commitment</h3>
+      <p>
+        SHA-256 is a cryptographic hash function with two properties that matter here:
+      </p>
+      <ul>
+        <li><strong>Determinism</strong> — the same bytes always produce the same 256-bit digest.</li>
+        <li><strong>Collision resistance</strong> — it is computationally infeasible to find two different inputs with the same digest. For a 256-bit hash, the birthday bound is 2<sup>128</sup> operations — beyond any currently feasible attack.</li>
+      </ul>
+      <p>
+        When you call <code>compute_file_hash(data)</code>, you are creating a
+        <em>content commitment</em>: a compact, unforgeable fingerprint of the file
+        bytes. This fingerprint is bound into every receipt. Anyone holding the receipt
+        and the original file can verify they match.
+      </p>
+    </section>
+
+    <!-- TIMING INSIGHT -->
+    <section class="doc-section" id="timing">
+      <div class="section-eyebrow">The Non-Obvious Insight</div>
+      <h2>The pre-deletion timing is everything</h2>
+
+      <div class="pull-quote">
+        <p>A hash computed after deletion could be fabricated. A hash committed before
+        deletion cannot.</p>
+        <cite>— <em>The Right to Be Forgotten</em>, Chapter 6</cite>
+      </div>
+
+      <p>
+        This is the non-obvious property that distinguishes deleteceipt from a simple
+        deletion log. Consider the naive approach: when a user requests deletion, you
+        delete the file and then write a log entry saying it was deleted. An adversary
+        (or a malfunctioning system) can write that log entry without ever deleting
+        anything. The log entry proves nothing about the file's actual existence or fate.
+      </p>
+
+      <p>
+        deleteceipt inverts this. The SHA-256 hash is computed <strong>at upload time</strong>,
+        before any deletion occurs. That hash is stored — in memory, in a database field,
+        wherever is appropriate for your architecture. When deletion occurs, the receipt
+        binds together the pre-computed hash, the timestamps, and the file inventory, and
+        signs the whole package.
+      </p>
+
+      <div class="steps">
+        <li>
+          <div class="step-body">
+            <div class="step-title">Upload time: content commitment</div>
+            <div class="step-desc">
+              <code>file_hash = compute_file_hash(file_bytes)</code> — the SHA-256 digest
+              of the file bytes is computed and stored before the file is written to disk.
+              This hash is the commitment: it proves the content existed.
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">Processing: normal work</div>
+            <div class="step-desc">
+              The job runs. Processing timestamps are recorded. The file hash sits in memory
+              or in a job record, waiting.
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">Pre-deletion: inventory</div>
+            <div class="step-desc">
+              Before calling <code>rmtree</code>, enumerate every file in the job directory.
+              Record paths, sizes, and roles (input / output / intermediate).
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">Deletion: atomic removal</div>
+            <div class="step-desc">
+              <code>shutil.rmtree(job_dir)</code> — the directory and all its contents are
+              removed. The <code>deleted_at</code> timestamp is recorded immediately after.
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">Receipt: signed proof</div>
+            <div class="step-desc">
+              <code>issue_receipt()</code> assembles the payload (job_id, file_hash,
+              timestamps, files_deleted), serializes it as canonical JSON, computes an
+              HMAC-SHA256 (or ECDSA) signature, and returns the signed receipt dict.
+              Store it in an append-only log.
+            </div>
+          </div>
+        </li>
+      </div>
+
+      <p>
+        The signed receipt is now a permanent, unforgeable record: this file, with this
+        content, was processed and deleted at these times. The signature prevents the
+        receipt from being modified after the fact. The pre-deletion hash prevents the
+        receipt from being fabricated for a file that never existed.
+      </p>
+    </section>
+
+    <!-- RECEIPT ANATOMY -->
+    <section class="doc-section" id="receipt-anatomy">
+      <div class="section-eyebrow">Reference</div>
+      <h2>Receipt anatomy</h2>
+
+      <p>
+        A receipt is a plain JSON object. Every field is defined here. The signed receipt
+        from <code>issue_receipt()</code> looks like this:
+      </p>
+
+      <pre><code>{
+  <span class="st">"job_id"</span>: <span class="st">"b8f2a1c3-4e5d-6f7a-8b9c-0d1e2f3a4b5c"</span>,
+  <span class="st">"file_hash_sha256"</span>: <span class="st">"e3b0c44298fc1c149afb4c8996fb924..."</span>,
+  <span class="st">"uploaded_at"</span>: <span class="st">"2026-06-16T03:42:00.000000+00:00"</span>,
+  <span class="st">"processing_completed_at"</span>: <span class="st">"2026-06-16T03:42:01.234567+00:00"</span>,
+  <span class="st">"deleted_at"</span>: <span class="st">"2026-06-16T03:42:01.345678+00:00"</span>,
+  <span class="st">"files_deleted"</span>: [
+    {<span class="st">"path"</span>: <span class="st">"input.pdf"</span>, <span class="st">"size_bytes"</span>: <span class="num">204800</span>, <span class="st">"role"</span>: <span class="st">"input"</span>},
+    {<span class="st">"path"</span>: <span class="st">"output.txt"</span>, <span class="st">"size_bytes"</span>: <span class="num">1024</span>, <span class="st">"role"</span>: <span class="st">"output"</span>}
+  ],
+  <span class="st">"server_signature"</span>: <span class="st">"k7mNpQr2sT4uVw8xYz0aB1cD3eF5gH6..."</span>
+}</code></pre>
+
+      <table class="field-table">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="field-name">job_id</td>
+            <td class="field-type">string</td>
+            <td class="field-desc">Your system's unique identifier for the processing job.
+              <span class="field-note">Use a UUID or other collision-resistant ID. This is how you look up receipts.</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="field-name">file_hash_sha256</td>
+            <td class="field-type">string (hex)</td>
+            <td class="field-desc">SHA-256 hex digest of the original file bytes, computed <strong>at upload time</strong> via <code>compute_file_hash()</code>.
+              <span class="field-note">This is the content commitment. 64 hex characters = 256 bits.</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="field-name">uploaded_at</td>
+            <td class="field-type">ISO 8601</td>
+            <td class="field-desc">When the file was received by your system.
+              <span class="field-note">Always include timezone info. Use <code>datetime.now(timezone.utc)</code>.</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="field-name">processing_completed_at</td>
+            <td class="field-type">ISO 8601</td>
+            <td class="field-desc">When the processing job finished — output was produced, all work complete.
+              <span class="field-note">Enables audit of processing duration for SLA compliance.</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="field-name">deleted_at</td>
+            <td class="field-type">ISO 8601</td>
+            <td class="field-desc">When the files were removed — immediately after <code>rmtree</code> returns.
+              <span class="field-note">The most legally significant timestamp. Record it as precisely as possible.</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="field-name">files_deleted</td>
+            <td class="field-type">array</td>
+            <td class="field-desc">List of <code>{path, size_bytes, role}</code> dicts for each file removed.
+              <span class="field-note">role is one of: "input", "output", "intermediate". Paths are relative to the job directory.</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="field-name">key_version</td>
+            <td class="field-type">string (optional)</td>
+            <td class="field-desc">Identifier for the signing key used. Supports key rotation — you can verify old receipts with the key version they were signed with.
+              <span class="field-note">Omit if you're not doing key rotation. Include it if you are.</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="field-name">server_signature</td>
+            <td class="field-type">base64</td>
+            <td class="field-desc">HMAC-SHA256 over the canonical JSON of all other fields. Present in HMAC receipts.
+              <span class="field-note">Computed after removing this field from the payload. Verification re-computes and compares.</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="field-name">server_signature_ecdsa</td>
+            <td class="field-type">base64 (DER)</td>
+            <td class="field-desc">ECDSA/P-256 signature over the canonical JSON. Present in ECDSA receipts.
+              <span class="field-note">DER-encoded signature, base64-encoded. Verification uses the embedded public key.</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="field-name">signing_public_key_pem</td>
+            <td class="field-type">string (PEM)</td>
+            <td class="field-desc">The P-256 public key used to produce the ECDSA signature. Present in ECDSA receipts.
+              <span class="field-note">Embedded in the receipt so it is self-contained — verifiers need no external key material.</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Canonical JSON</h3>
+      <p>
+        Signatures are computed over the <em>canonical</em> form of the receipt payload.
+        This matters because JSON serialization is not unique: key ordering, whitespace,
+        and unicode encoding can all vary between implementations. A signature over
+        non-canonical JSON would be meaningless — two different serializations of the
+        same logical object would produce different signatures.
+      </p>
+      <p>
+        deleteceipt's canonical form is:
+        <code>json.dumps(payload, sort_keys=True)</code> — keys sorted lexicographically,
+        no extra whitespace, UTF-8 encoded. This is deterministic across all Python
+        versions and platforms.
+      </p>
+    </section>
+
+    <!-- HMAC -->
+    <section class="doc-section" id="hmac">
+      <div class="section-eyebrow">Zero Dependencies</div>
+      <h2>HMAC — symmetric signing</h2>
+
+      <p>
+        HMAC-SHA256 is the default signing mechanism. It requires no third-party
+        dependencies — only Python's standard library <code>hmac</code> and
+        <code>hashlib</code> modules. The signing key is a server-side secret: never
+        disclosed to clients, rotated on a schedule, and used to both sign and verify.
+      </p>
+
+      <h3>Installation</h3>
+      <pre><code>pip install deleteceipt</code></pre>
+
+      <h3>Issue a receipt</h3>
+      <pre><code><span class="kw">from</span> deleteceipt.receipt <span class="kw">import</span> compute_file_hash, issue_receipt
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timezone
+
+<span class="cm"># Step 1 — hash BEFORE writing to disk</span>
+file_bytes = open(<span class="st">"document.pdf"</span>, <span class="st">"rb"</span>).read()
+file_hash = compute_file_hash(file_bytes)
+
+<span class="cm"># ... process the file ...</span>
+
+<span class="cm"># Step 2 — issue receipt at deletion time</span>
+receipt = issue_receipt(
+    job_id=<span class="st">"b8f2a1c3-4e5d-6f7a-8b9c-0d1e2f3a4b5c"</span>,
+    file_hash=file_hash,
+    uploaded_at=datetime(<span class="num">2026</span>, <span class="num">6</span>, <span class="num">16</span>, <span class="num">3</span>, <span class="num">42</span>, tzinfo=timezone.utc),
+    processing_completed_at=datetime(<span class="num">2026</span>, <span class="num">6</span>, <span class="num">16</span>, <span class="num">3</span>, <span class="num">42</span>, <span class="num">1</span>, tzinfo=timezone.utc),
+    deleted_at=datetime(<span class="num">2026</span>, <span class="num">6</span>, <span class="num">16</span>, <span class="num">3</span>, <span class="num">42</span>, <span class="num">2</span>, tzinfo=timezone.utc),
+    signing_key=<span class="st">"your-server-secret"</span>,
+    files_deleted=[
+        {<span class="st">"path"</span>: <span class="st">"input.pdf"</span>, <span class="st">"size_bytes"</span>: <span class="num">204800</span>, <span class="st">"role"</span>: <span class="st">"input"</span>},
+        {<span class="st">"path"</span>: <span class="st">"output.txt"</span>, <span class="st">"size_bytes"</span>: <span class="num">1024</span>, <span class="st">"role"</span>: <span class="st">"output"</span>},
+    ],
+)</code></pre>
+
+      <h3>Verify a receipt</h3>
+      <pre><code><span class="kw">from</span> deleteceipt.receipt <span class="kw">import</span> verify_receipt
+
+ok = verify_receipt(receipt, signing_key=<span class="st">"your-server-secret"</span>)
+<span class="kw">assert</span> ok  <span class="cm"># True if untampered and signed with the correct key</span></code></pre>
+
+      <h3>Key rotation</h3>
+      <pre><code><span class="cm"># Issue with key version</span>
+receipt = issue_receipt(
+    ...,
+    signing_key=<span class="st">"key-v2"</span>,
+    key_version=<span class="st">"v2"</span>,
+)
+
+<span class="cm"># Verify by looking up the key from the version field</span>
+key_store = {<span class="st">"v1"</span>: <span class="st">"key-v1"</span>, <span class="st">"v2"</span>: <span class="st">"key-v2"</span>}
+key = key_store[receipt[<span class="st">"key_version"</span>]]
+ok = verify_receipt(receipt, signing_key=key)</code></pre>
+
+      <div class="callout info">
+        <div class="callout-icon">🔑</div>
+        <div class="callout-body">
+          <strong>Key management:</strong> Store signing keys in a secrets manager
+          (AWS Secrets Manager, HashiCorp Vault, GCP Secret Manager). Never hardcode them.
+          Rotate on a schedule. The <code>key_version</code> field lets you verify old
+          receipts even after rotation.
+        </div>
+      </div>
+    </section>
+
+    <!-- ECDSA -->
+    <section class="doc-section" id="ecdsa">
+      <div class="section-eyebrow">Third-Party Verification</div>
+      <h2>ECDSA — asymmetric signing</h2>
+
+      <p>
+        HMAC-SHA256 is symmetric: verifying a receipt requires the same secret key used
+        to sign it. If you want a third party — a regulator, an auditor, a customer —
+        to independently verify a receipt without your involvement, HMAC fails: you would
+        have to disclose the signing key, which would allow them to forge receipts.
+      </p>
+
+      <p>
+        ECDSA (P-256 / secp256r1) is asymmetric: you sign with a private key that you
+        never disclose, and anyone can verify with the corresponding public key, which
+        you publish freely. The receipt is self-contained: the public key is embedded in
+        <code>signing_public_key_pem</code>, so verifiers need no external key material.
+      </p>
+
+      <h3>Installation</h3>
+      <pre><code>pip install "deleteceipt[ecdsa]"</code></pre>
+
+      <h3>Generate a keypair</h3>
+      <pre><code><span class="kw">from</span> deleteceipt.ecdsa_receipt <span class="kw">import</span> generate_keypair
+
+private_pem, public_pem = generate_keypair()
+
+<span class="cm"># Store private_pem in a secrets manager — never expose it</span>
+<span class="cm"># Publish public_pem on your website, in receipts, wherever</span></code></pre>
+
+      <pre><code><span class="cm"># Or via CLI:</span>
+deleteceipt keygen</code></pre>
+
+      <h3>Issue an ECDSA receipt</h3>
+      <pre><code><span class="kw">from</span> deleteceipt.ecdsa_receipt <span class="kw">import</span> issue_receipt_ecdsa
+<span class="kw">from</span> deleteceipt.receipt <span class="kw">import</span> compute_file_hash
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timezone
+
+file_hash = compute_file_hash(open(<span class="st">"document.pdf"</span>, <span class="st">"rb"</span>).read())
+
+receipt = issue_receipt_ecdsa(
+    job_id=<span class="st">"b8f2a1c3-4e5d-6f7a-8b9c-0d1e2f3a4b5c"</span>,
+    file_hash=file_hash,
+    uploaded_at=datetime(<span class="num">2026</span>, <span class="num">6</span>, <span class="num">16</span>, <span class="num">3</span>, <span class="num">42</span>, tzinfo=timezone.utc),
+    processing_completed_at=datetime(<span class="num">2026</span>, <span class="num">6</span>, <span class="num">16</span>, <span class="num">3</span>, <span class="num">42</span>, <span class="num">1</span>, tzinfo=timezone.utc),
+    deleted_at=datetime(<span class="num">2026</span>, <span class="num">6</span>, <span class="num">16</span>, <span class="num">3</span>, <span class="num">42</span>, <span class="num">2</span>, tzinfo=timezone.utc),
+    private_key_pem=private_pem,
+    files_deleted=[
+        {<span class="st">"path"</span>: <span class="st">"input.pdf"</span>, <span class="st">"size_bytes"</span>: <span class="num">204800</span>, <span class="st">"role"</span>: <span class="st">"input"</span>},
+    ],
+)
+
+<span class="cm"># receipt["signing_public_key_pem"] is embedded — self-contained</span></code></pre>
+
+      <h3>Verify — no key needed</h3>
+      <pre><code><span class="kw">from</span> deleteceipt.ecdsa_receipt <span class="kw">import</span> verify_receipt_ecdsa
+
+<span class="cm"># Uses the public key embedded in the receipt</span>
+ok = verify_receipt_ecdsa(receipt)
+<span class="kw">assert</span> ok
+
+<span class="cm"># Or with an external public key (for additional trust verification)</span>
+ok = verify_receipt_ecdsa(receipt, public_key_pem=published_public_pem)</code></pre>
+
+      <h3>HMAC vs ECDSA — when to use which</h3>
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>HMAC-SHA256</th>
+            <th>ECDSA / P-256</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Dependencies</td>
+            <td class="badge-yes">None (stdlib only)</td>
+            <td class="badge-partial">cryptography package</td>
+          </tr>
+          <tr>
+            <td>Performance</td>
+            <td class="badge-yes">Very fast</td>
+            <td class="badge-partial">~10× slower</td>
+          </tr>
+          <tr>
+            <td>Internal verification</td>
+            <td class="badge-yes">Yes</td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Third-party verification</td>
+            <td class="badge-no">No (requires key disclosure)</td>
+            <td class="badge-yes">Yes (public key only)</td>
+          </tr>
+          <tr>
+            <td>Self-contained receipt</td>
+            <td class="badge-no">No</td>
+            <td class="badge-yes">Yes (public key embedded)</td>
+          </tr>
+          <tr>
+            <td>Key exposure risk</td>
+            <td class="badge-partial">Verifier must hold secret key</td>
+            <td class="badge-yes">Private key never leaves server</td>
+          </tr>
+          <tr>
+            <td>Use for regulatory audit</td>
+            <td class="badge-partial">With caveats</td>
+            <td class="badge-yes">Preferred</td>
+          </tr>
+          <tr>
+            <td>Use for internal audit</td>
+            <td class="badge-yes">Preferred</td>
+            <td class="badge-yes">Also fine</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- AUDIT LOG -->
+    <section class="doc-section" id="audit-log">
+      <div class="section-eyebrow">Tamper Evidence</div>
+      <h2>Audit log</h2>
+
+      <p>
+        A signed receipt is proof of a single deletion event. A hash-chained audit log
+        is proof that the sequence of deletion events has not been modified after the fact.
+        Each entry includes the SHA-256 hash of the previous entry (<code>prev_hash</code>),
+        forming a chain where tampering with any entry invalidates all subsequent entries.
+      </p>
+
+      <div class="chain-visual">
+        <div class="chain-entry">
+          <div class="chain-seq">Entry #1 — Genesis</div>
+          <div class="chain-fields">
+            <span class="chain-key">seq:</span><span class="chain-val">1</span>
+            <span class="chain-key">event:</span><span class="chain-val">upload</span>
+            <span class="chain-key">prev_hash:</span><span class="chain-val hash">0000...0000</span>
+            <span class="chain-key">entry_hash:</span><span class="chain-val hash">a1b2c3d4...</span>
+          </div>
+        </div>
+        <div class="chain-arrow">↓  prev_hash of next entry = entry_hash of this entry</div>
+        <div class="chain-entry">
+          <div class="chain-seq">Entry #2</div>
+          <div class="chain-fields">
+            <span class="chain-key">seq:</span><span class="chain-val">2</span>
+            <span class="chain-key">event:</span><span class="chain-val">deleted</span>
+            <span class="chain-key">prev_hash:</span><span class="chain-val hash">a1b2c3d4...</span>
+            <span class="chain-key">entry_hash:</span><span class="chain-val hash">e5f6a7b8...</span>
+          </div>
+        </div>
+        <div class="chain-arrow">↓  tamper entry #1 → entry_hash changes → entry #2's prev_hash no longer matches</div>
+        <div class="chain-entry">
+          <div class="chain-seq">Entry #3</div>
+          <div class="chain-fields">
+            <span class="chain-key">seq:</span><span class="chain-val">3</span>
+            <span class="chain-key">event:</span><span class="chain-val">download</span>
+            <span class="chain-key">prev_hash:</span><span class="chain-val hash">e5f6a7b8...</span>
+            <span class="chain-key">entry_hash:</span><span class="chain-val hash">c9d0e1f2...</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>In-memory (testing)</h3>
+      <pre><code><span class="kw">from</span> deleteceipt.audit <span class="kw">import</span> AuditLog
+
+log = AuditLog()  <span class="cm"># InMemoryBackend by default</span>
+
+log.append_event(<span class="st">"upload"</span>, job_id=<span class="st">"abc"</span>, metadata={
+    <span class="st">"filename"</span>: <span class="st">"document.pdf"</span>,
+    <span class="st">"size_bytes"</span>: <span class="num">204800</span>,
+})
+log.append_event(<span class="st">"processing_start"</span>, job_id=<span class="st">"abc"</span>, metadata={})
+log.append_event(<span class="st">"deleted"</span>, job_id=<span class="st">"abc"</span>, metadata={<span class="st">"files_count"</span>: <span class="num">2</span>})
+
+result = log.verify_chain()
+<span class="cm"># {"valid": True, "broken_at_seq": None, "total_entries": 3}</span></code></pre>
+
+      <h3>MongoDB (production, sync)</h3>
+      <pre><code><span class="kw">from</span> pymongo <span class="kw">import</span> MongoClient
+<span class="kw">from</span> deleteceipt.audit <span class="kw">import</span> AuditLog, MongoBackend
+
+col = MongoClient(<span class="st">"mongodb://localhost:27017"</span>)[<span class="st">"mydb"</span>][<span class="st">"audit_log"</span>]
+log = AuditLog(backend=MongoBackend(col))
+
+log.append_event(<span class="st">"deleted"</span>, job_id=<span class="st">"abc"</span>, metadata={<span class="st">"files_count"</span>: <span class="num">2</span>})
+result = log.verify_chain()</code></pre>
+
+      <h3>Motor (production, async)</h3>
+      <pre><code><span class="kw">import</span> motor.motor_asyncio
+<span class="kw">from</span> deleteceipt.audit <span class="kw">import</span> AsyncAuditLog, AsyncMongoBackend
+
+client = motor.motor_asyncio.AsyncIOMotorClient(<span class="st">"mongodb://localhost:27017"</span>)
+col = client[<span class="st">"mydb"</span>][<span class="st">"audit_log"</span>]
+log = AsyncAuditLog(backend=AsyncMongoBackend(col))
+
+<span class="kw">await</span> log.append_event(<span class="st">"deleted"</span>, job_id=<span class="st">"abc"</span>, metadata={<span class="st">"files_count"</span>: <span class="num">2</span>})
+result = <span class="kw">await</span> log.verify_chain()</code></pre>
+
+      <h3>Custom backend</h3>
+      <p>
+        Implement the <code>StorageBackend</code> protocol to use any datastore.
+        Three methods required:
+      </p>
+      <pre><code><span class="kw">from</span> deleteceipt.audit <span class="kw">import</span> AuditLog
+
+<span class="kw">class</span> <span class="fn">MyBackend</span>:
+    <span class="kw">def</span> <span class="fn">get_last</span>(self) <span class="op">-></span> dict | None: ...
+    <span class="kw">def</span> <span class="fn">insert</span>(self, entry: dict) <span class="op">-></span> None: ...
+    <span class="kw">def</span> <span class="fn">get_all_ordered</span>(self) <span class="op">-></span> list[dict]: ...
+
+log = AuditLog(backend=MyBackend())</code></pre>
+
+      <div class="callout warn">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>Append-only is your responsibility.</strong> The <code>StorageBackend</code>
+          protocol has no enforcement mechanism — it is an interface, not a policy.
+          Configure your database collection to reject updates and deletes at the
+          permission level. If an attacker (or a bug) can modify entries, the chain
+          provides no tamper evidence.
+        </div>
+      </div>
+
+      <h3>Conventional event types</h3>
+      <p>
+        Event types are strings — any value is accepted. These are the conventional
+        values used throughout the documentation:
+      </p>
+      <table class="field-table">
+        <thead><tr><th>Event</th><th>When to log it</th></tr></thead>
+        <tbody>
+          <tr><td class="field-name">upload</td><td class="field-desc">File received and hash committed</td></tr>
+          <tr><td class="field-name">processing_start</td><td class="field-desc">Pipeline began executing</td></tr>
+          <tr><td class="field-name">processing_complete</td><td class="field-desc">Pipeline finished, output produced</td></tr>
+          <tr><td class="field-name">download</td><td class="field-desc">Output artifact downloaded by user</td></tr>
+          <tr><td class="field-name">deleted</td><td class="field-desc">Job directory removed, receipt issued</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- CLI -->
+    <section class="doc-section" id="cli">
+      <div class="section-eyebrow">CLI Reference</div>
+      <h2>Command-line interface</h2>
+
+      <p>
+        The <code>deleteceipt</code> CLI is installed alongside the Python package.
+        It provides four subcommands for inspecting and verifying receipt files.
+      </p>
+
+      <h3>verify — HMAC receipt</h3>
+      <pre><code>deleteceipt verify receipt.json --key YOUR_SIGNING_KEY
+
+<span class="cm"># Output on success:</span>
+OK  — HMAC-SHA256 signature is valid.
+
+<span class="cm"># Output on failure:</span>
+INVALID — signature verification failed.
+  Possible causes: wrong key, tampered payload, or receipt was not issued by this server.</code></pre>
+
+      <h3>verify-ecdsa — ECDSA receipt</h3>
+      <pre><code><span class="cm"># Uses embedded public key (self-contained)</span>
+deleteceipt verify-ecdsa receipt.json
+
+<span class="cm"># Uses external public key file</span>
+deleteceipt verify-ecdsa receipt.json --key public_key.pem
+
+<span class="cm"># Output on success:</span>
+OK  — ECDSA (P-256) signature is valid.</code></pre>
+
+      <h3>keygen — generate ECDSA keypair</h3>
+      <pre><code>deleteceipt keygen
+
+<span class="cm"># Prints both keys to stdout:</span>
+# PRIVATE KEY — keep secret, never distribute
+-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg...
+-----END PRIVATE KEY-----
+
+# PUBLIC KEY — embed in receipts / distribute to verifiers
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE...
+-----END PUBLIC KEY-----</code></pre>
+
+      <h3>inspect — human-readable table</h3>
+      <pre><code>deleteceipt inspect receipt.json
+
+<span class="cm"># Prints all fields in a formatted table, no verification:</span>
++-----------------------------+------------------------------------------+
+| job_id                      | b8f2a1c3-4e5d-6f7a-8b9c-0d1e2f3a4b5c  |
++-----------------------------+------------------------------------------+
+| file_hash_sha256            | e3b0c44298fc1c149afb4c8996fb924...      |
++-----------------------------+------------------------------------------+
+| deleted_at                  | 2026-06-16T03:42:02+00:00               |
++-----------------------------+------------------------------------------+</code></pre>
+    </section>
+
+    <!-- FASTAPI -->
+    <section class="doc-section" id="fastapi">
+      <div class="section-eyebrow">Integration</div>
+      <h2>FastAPI integration</h2>
+
+      <p>
+        A complete async FastAPI integration using the HMAC receipt and the async audit
+        log. This covers the full lifecycle: upload, hash commitment, processing,
+        inventory, deletion, receipt issuance, and audit logging.
+      </p>
+
+      <pre><code><span class="kw">import</span> os, shutil, uuid
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timezone
+
+<span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI, UploadFile
+<span class="kw">from</span> deleteceipt.receipt <span class="kw">import</span> compute_file_hash, issue_receipt
+<span class="kw">from</span> deleteceipt.audit <span class="kw">import</span> AsyncAuditLog, AsyncMongoBackend
+<span class="kw">import</span> motor.motor_asyncio
+
+app = FastAPI()
+SIGNING_KEY = os.environ[<span class="st">"DELETION_SIGNING_KEY"</span>]
+JOBS_DIR = Path(<span class="st">"/jobs"</span>)  <span class="cm"># mount as tmpfs</span>
+
+<span class="cm"># Async audit log backed by MongoDB</span>
+_client = motor.motor_asyncio.AsyncIOMotorClient(os.environ[<span class="st">"MONGODB_URL"</span>])
+_col = _client[<span class="st">"mydb"</span>][<span class="st">"audit_log"</span>]
+audit = AsyncAuditLog(backend=AsyncMongoBackend(_col))
+
+
+<span class="kw">@app</span>.post(<span class="st">"/process"</span>)
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">process_document</span>(file: UploadFile):
+    job_id = str(uuid.uuid4())
+    uploaded_at = datetime.now(timezone.utc)
+
+    <span class="cm"># Read and hash before writing to disk</span>
+    file_bytes = <span class="kw">await</span> file.read()
+    file_hash = compute_file_hash(file_bytes)
+
+    <span class="kw">await</span> audit.append_event(<span class="st">"upload"</span>, job_id=job_id, metadata={
+        <span class="st">"filename"</span>: file.filename,
+        <span class="st">"size_bytes"</span>: len(file_bytes),
+        <span class="st">"file_hash_sha256"</span>: file_hash,
+    })
+
+    <span class="cm"># Isolated job directory on tmpfs</span>
+    job_dir = JOBS_DIR / job_id
+    job_dir.mkdir(parents=True)
+
+    <span class="kw">try</span>:
+        (job_dir / <span class="st">"input"</span> / file.filename).write_bytes(file_bytes)
+        <span class="kw">await</span> audit.append_event(<span class="st">"processing_start"</span>, job_id=job_id, metadata={})
+
+        <span class="cm"># ... run processing ...</span>
+        result_text = <span class="st">"processed content"</span>
+        (job_dir / <span class="st">"output.txt"</span>).write_text(result_text)
+
+        processing_completed_at = datetime.now(timezone.utc)
+        <span class="kw">await</span> audit.append_event(<span class="st">"processing_complete"</span>, job_id=job_id, metadata={})
+
+        <span class="cm"># Enumerate before delete</span>
+        files_deleted = [
+            {<span class="st">"path"</span>: str(p.relative_to(job_dir)),
+             <span class="st">"size_bytes"</span>: p.stat().st_size,
+             <span class="st">"role"</span>: <span class="st">"input"</span> <span class="kw">if</span> <span class="st">"input"</span> <span class="kw">in</span> str(p) <span class="kw">else</span> <span class="st">"output"</span>}
+            <span class="kw">for</span> p <span class="kw">in</span> job_dir.rglob(<span class="st">"*"</span>) <span class="kw">if</span> p.is_file()
+        ]
+
+        <span class="cm"># Delete everything</span>
+        shutil.rmtree(job_dir)
+        deleted_at = datetime.now(timezone.utc)
+
+        <span class="cm"># Issue receipt</span>
+        receipt = issue_receipt(
+            job_id=job_id,
+            file_hash=file_hash,
+            uploaded_at=uploaded_at,
+            processing_completed_at=processing_completed_at,
+            deleted_at=deleted_at,
+            signing_key=SIGNING_KEY,
+            files_deleted=files_deleted,
+        )
+
+        <span class="kw">await</span> audit.append_event(<span class="st">"deleted"</span>, job_id=job_id, metadata={
+            <span class="st">"files_count"</span>: len(files_deleted),
+            <span class="st">"receipt_job_id"</span>: job_id,
+        })
+
+        <span class="kw">return</span> {<span class="st">"result"</span>: result_text, <span class="st">"deletion_receipt"</span>: receipt}
+
+    <span class="kw">except</span> Exception:
+        <span class="kw">if</span> job_dir.exists():
+            shutil.rmtree(job_dir)
+        <span class="kw">raise</span></code></pre>
+    </section>
+
+    <!-- LIMITS -->
+    <section class="doc-section" id="limits">
+      <div class="section-eyebrow">Honest Limits</div>
+      <h2>What a receipt does and does not prove</h2>
+
+      <p>
+        Cryptographic receipts are precise instruments. Precision requires honesty about
+        scope. Here is what a deleteceipt receipt proves and what it does not.
+      </p>
+
+      <h3>What it proves</h3>
+      <ul>
+        <li>A file with SHA-256 hash <code>file_hash_sha256</code> existed on the issuing system.</li>
+        <li>That file was deleted at <code>deleted_at</code>, as recorded by the issuing system.</li>
+        <li>The receipt payload has not been modified after signing (the signature would fail verification if it had been).</li>
+        <li>For ECDSA receipts: the signing server held the private key corresponding to <code>signing_public_key_pem</code> at signing time.</li>
+        <li>For chained audit logs: no entry in the chain has been modified or deleted (the chain traversal would fail if entries had been).</li>
+      </ul>
+
+      <h3>What it does not prove</h3>
+      <ul>
+        <li><strong>It does not prove the data does not exist elsewhere.</strong> Backups, replicas, caches, search indices, and downstream systems are all outside the scope of the receipt.</li>
+        <li><strong>It does not prove the hash was computed before deletion.</strong> A malicious or buggy implementation could compute the hash after deletion and claim otherwise. The pre-deletion timing is enforced by your code, not by the receipt itself.</li>
+        <li><strong>It does not prove the file existed at upload time.</strong> The hash proves content commitment — but a receipt can be constructed for any hash, including a hash of fabricated content. The receipt is only as trustworthy as the code that issues it.</li>
+        <li><strong>For HMAC receipts: a verifier with the signing key can forge receipts.</strong> This is why ECDSA is preferred for third-party verification.</li>
+        <li><strong>A complete audit log does not prove completeness.</strong> It proves the entries present have not been modified. It cannot prove that no entries were omitted before insertion.</li>
+      </ul>
+
+      <div class="pull-quote">
+        <p>Cryptographic proof is precise, not omniscient. It proves exactly what it
+        measures, and nothing more. The value of a receipt is proportional to the
+        trustworthiness of the system that issues it.</p>
+        <cite>— <em>The Right to Be Forgotten</em>, Chapter 9</cite>
+      </div>
+
+      <div class="callout success">
+        <div class="callout-icon">✅</div>
+        <div class="callout-body">
+          <strong>The right combination:</strong> Use deletion-first architecture (tmpfs,
+          TTL-by-default, data minimization) so that the issuing system's scope covers the
+          full lifecycle of the data. Then use deleteceipt to produce a signed receipt for
+          that lifecycle. Together, they provide a defensible, auditable record of
+          compliance — one that goes significantly beyond a confirmation email.
+        </div>
+      </div>
+    </section>
+
+    <!-- PATENT -->
+    <section class="doc-section" id="patent">
+      <div class="section-eyebrow">About</div>
+      <h2>Patent &amp; License</h2>
+
+      <p>
+        The cryptographic deletion receipt mechanism — pre-deletion SHA-256 hash
+        commitment, HMAC-SHA256/ECDSA signed receipt, append-only hash-chained audit log
+        — is the subject of a pending USPTO provisional patent application:
+      </p>
+
+      <table class="field-table">
+        <tbody>
+          <tr>
+            <td class="field-name">Title</td>
+            <td class="field-desc">System and Method for Generating Cryptographically Signed Deletion Receipts in a Document Processing Service</td>
+          </tr>
+          <tr>
+            <td class="field-name">Inventor</td>
+            <td class="field-desc">Yoonil Choi</td>
+          </tr>
+          <tr>
+            <td class="field-name">Application No.</td>
+            <td class="field-desc">USPTO Provisional No. 64/019,899</td>
+          </tr>
+          <tr>
+            <td class="field-name">Filed</td>
+            <td class="field-desc">March 28, 2026 (10:03:03 AM ET)</td>
+          </tr>
+          <tr>
+            <td class="field-name">Type</td>
+            <td class="field-desc">Utility — Provisional Application under 35 U.S.C. 111(b)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The library is released under the <strong>Apache License 2.0</strong>. You may
+        use, modify, and distribute it freely for any purpose, including commercial use,
+        subject to the license terms. See
+        <a href="https://github.com/deleteceipt/deleteceipt/blob/main/LICENSE" target="_blank">LICENSE</a>
+        and
+        <a href="https://github.com/deleteceipt/deleteceipt/blob/main/NOTICE" target="_blank">NOTICE</a>
+        for full details.
+      </p>
+
+      <h3>The book</h3>
+      <p>
+        The ideas behind deleteceipt are developed in full in
+        <em>The Right to Be Forgotten</em> by Yoonil Choi — a book that traces the arc
+        from the Google Spain ruling through the technical reality of distributed
+        deletion to the design of cryptographic assurance systems.
+      </p>
+      <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:20px;">
+        <a href="https://www.amazon.com/dp/B0GP35C79Q" target="_blank" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;background:var(--accent);color:#fff;text-decoration:none;">
+          Kindle Edition ↗
+        </a>
+        <a href="https://www.amazon.com/dp/B0GWDJ2B71" target="_blank" class="btn btn-ghost" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;border:1px solid var(--border);color:var(--text);text-decoration:none;">
+          Paperback ↗
+        </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <span>© 2026 Yoonil Choi / ComputePortal, Inc. — Apache 2.0</span>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="donate.html">Donate</a>
+    <a href="https://github.com/deleteceipt/deleteceipt" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/deleteceipt/" target="_blank">PyPI</a>
+  </div>
+</footer>
+
+<script>
+  // Sidebar active link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.sidebar a[href^="#"]');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-60px 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

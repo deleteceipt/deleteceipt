@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>deleteceipt — live demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --border:   #2a2d3e;
+      --accent:   #6c63ff;
+      --accent2:  #00d4aa;
+      --danger:   #ff4f4f;
+      --text:     #e2e4f0;
+      --muted:    #7b7f9e;
+      --code-bg:  #12141f;
+      --radius:   10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── layout ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    header h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.3px; }
+    header .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: var(--accent);
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    header .sub { color: var(--muted); font-size: 13px; margin-left: auto; }
+
+    main {
+      max-width: 860px;
+      margin: 40px auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── steps ── */
+    .steps {
+      display: flex;
+      gap: 0;
+      margin-bottom: 36px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .step-tab {
+      flex: 1;
+      padding: 14px 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-right: 1px solid var(--border);
+      cursor: default;
+      transition: background 0.2s, color 0.2s;
+      position: relative;
+    }
+    .step-tab:last-child { border-right: none; }
+    .step-tab.active { background: var(--accent); color: #fff; }
+    .step-tab.done { color: var(--accent2); }
+    .step-tab.done::after {
+      content: " ✓";
+    }
+
+    /* ── cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card h2 .num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .card p.desc { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+
+    /* ── upload zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(108,99,255,0.06);
+    }
+    .drop-zone input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+    .drop-zone .icon { font-size: 36px; margin-bottom: 8px; }
+    .drop-zone .hint { color: var(--muted); font-size: 13px; }
+    .drop-zone .file-name {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    /* ── buttons ── */
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 7px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    button:active { transform: scale(0.97); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-danger  { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--accent2); color: #0f1117; }
+    .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+    /* ── result blocks ── */
+    .result-block {
+      margin-top: 20px;
+      border-radius: 7px;
+      overflow: hidden;
+      display: none;
+    }
+    .result-block.visible { display: block; }
+    .result-block .result-header {
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-block.ok .result-header  { background: rgba(0,212,170,0.15); color: var(--accent2); }
+    .result-block.err .result-header { background: rgba(255,79,79,0.15);  color: var(--danger); }
+    .result-block.info .result-header { background: rgba(108,99,255,0.15); color: var(--accent); }
+    pre.json {
+      background: var(--code-bg);
+      padding: 16px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 340px;
+      overflow-y: auto;
+    }
+
+    /* ── hash commit banner ── */
+    .commit-banner {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 7px;
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.3);
+      font-size: 13px;
+      color: var(--accent);
+    }
+    .commit-banner.visible { display: block; }
+    .commit-banner strong { display: block; font-weight: 700; margin-bottom: 4px; }
+    .commit-banner code {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 11px;
+      word-break: break-all;
+      color: var(--text);
+    }
+
+    /* ── verify result ── */
+    .verify-result {
+      display: none;
+      margin-top: 20px;
+      padding: 20px 24px;
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    .verify-result.visible { display: block; }
+    .verify-result.valid {
+      background: rgba(0,212,170,0.1);
+      border: 1px solid rgba(0,212,170,0.3);
+    }
+    .verify-result.invalid {
+      background: rgba(255,79,79,0.1);
+      border: 1px solid rgba(255,79,79,0.3);
+    }
+    .verify-result .big-icon { font-size: 48px; margin-bottom: 8px; }
+    .verify-result h3 { font-size: 1.1rem; margin-bottom: 6px; }
+    .verify-result p  { font-size: 13px; color: var(--muted); }
+
+    /* ── timeline ── */
+    .timeline {
+      display: none;
+      margin-top: 20px;
+      padding: 0;
+      list-style: none;
+    }
+    .timeline.visible { display: block; }
+    .timeline li {
+      display: flex;
+      gap: 14px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .timeline li:last-child { border-bottom: none; }
+    .timeline .tl-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent2);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    .timeline .tl-label { color: var(--muted); min-width: 160px; }
+    .timeline .tl-value { color: var(--text); font-family: "SF Mono", "Fira Code", monospace; font-size: 11px; word-break: break-all; }
+
+    /* ── misc ── */
+    .spacer { height: 12px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+    .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading .spinner { display: inline-block; }
+    .loading .btn-label { display: none; }
+
+    .api-url {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .api-url span { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>deleteceipt</h1>
+  <span class="badge">LIVE DEMO</span>
+  <span class="sub">Requires the FastAPI backend running on localhost:8001</span>
+</header>
+
+<main>
+
+  <div class="api-url">API: <span id="api-base">http://localhost:8001</span></div>
+
+  <!-- step tabs -->
+  <div class="steps">
+    <div class="step-tab active" id="tab-1">1 · Upload</div>
+    <div class="step-tab"        id="tab-2">2 · Delete</div>
+    <div class="step-tab"        id="tab-3">3 · Receipt</div>
+    <div class="step-tab"        id="tab-4">4 · Verify</div>
+  </div>
+
+  <!-- ── Step 1: Upload ── -->
+  <div class="card" id="card-upload">
+    <h2><span class="num">1</span> Upload a file</h2>
+    <p class="desc">
+      The server computes a SHA-256 hash of the file <em>immediately at upload time</em>
+      — before any processing or deletion. This is the cryptographic commitment that
+      makes the later receipt trustworthy.
+    </p>
+
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" />
+      <div class="icon">📄</div>
+      <div>Drop a file here, or <strong>click to browse</strong></div>
+      <div class="hint">Any file type · max 50 MB</div>
+      <div class="file-name" id="file-name"></div>
+    </div>
+
+    <div class="row">
+      <button class="btn-primary" id="btn-upload" disabled>
+        <span class="spinner"></span>
+        <span class="btn-label">Upload &amp; commit hash</span>
+      </button>
+    </div>
+
+    <div class="commit-banner" id="commit-banner">
+      <strong>Hash committed at upload time</strong>
+      SHA-256: <code id="committed-hash"></code>
+    </div>
+
+    <div class="result-block" id="upload-result">
+      <div class="result-header">Server response</div>
+      <pre class="json" id="upload-json"></pre>
+    </div>
+  </div>
+
+  <!-- ── Step 2: Delete ── -->
+  <div class="card" id="card-delete">
+    <h2><span class="num">2</span> Delete the file &amp; issue a receipt</h2>
+    <p class="desc">
+      The server deletes all files associated with the job, then signs a receipt
+      using ECDSA / P-256. The signature covers the pre-committed hash — not a hash
+      computed after deletion.
+    </p>
+
+    <div class="row">
+      <button class="btn-danger" id="btn-delete" disabled>
+        <span class="spinner"></span>
+        <span class="btn-label">🗑 Delete &amp; issue receipt</span>
+      </button>
+    </div>
+
+    <div class="result-block" id="delete-result">
+      <div class="result-header">Server response</div>
+      <pre class="json" id="delete-json"></pre>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Receipt ── -->
+  <div class="card" id="card-receipt">
+    <h2><span class="num">3</span> Download the signed receipt</h2>
+    <p class="desc">
+      The receipt is a JSON document containing the file hash, timestamps, and an
+      ECDSA signature. It is self-contained — no server cooperation needed to verify it.
+    </p>
+
+    <div class="row">
+      <button class="btn-success" id="btn-receipt" disabled>
+        <span class="spinner"></span>
+        <span class="btn-label">⬇ Fetch receipt</span>
+      </button>
+      <button class="btn-ghost" id="btn-download" disabled>Save as JSON</button>
+    </div>
+
+    <ul class="timeline" id="receipt-timeline"></ul>
+
+    <div class="result-block" id="receipt-result">
+      <div class="result-header">Signed receipt (full JSON)</div>
+      <pre class="json" id="receipt-json"></pre>
+    </div>
+  </div>
+
+  <!-- ── Step 4: Verify ── -->
+  <div class="card" id="card-verify">
+    <h2><span class="num">4</span> Verify the receipt</h2>
+    <p class="desc">
+      Send the receipt back to the server's <code>/verify-receipt</code> endpoint —
+      or verify it yourself in any environment that supports ECDSA/P-256. The receipt
+      contains the public key, so no secret is required.
+    </p>
+
+    <div class="row">
+      <button class="btn-primary" id="btn-verify" disabled>
+        <span class="spinner"></span>
+        <span class="btn-label">Verify signature</span>
+      </button>
+      <button class="btn-ghost" id="btn-tamper" disabled>Tamper &amp; re-verify</button>
+    </div>
+
+    <div class="verify-result" id="verify-result"></div>
+  </div>
+
+</main>
+
+<script>
+  const API = "http://localhost:8001";
+
+  // ── state ──
+  let jobId = null;
+  let receipt = null;
+  let selectedFile = null;
+
+  // ── DOM refs ──
+  const fileInput    = document.getElementById("file-input");
+  const dropZone     = document.getElementById("drop-zone");
+  const fileName     = document.getElementById("file-name");
+  const btnUpload    = document.getElementById("btn-upload");
+  const btnDelete    = document.getElementById("btn-delete");
+  const btnReceipt   = document.getElementById("btn-receipt");
+  const btnDownload  = document.getElementById("btn-download");
+  const btnVerify    = document.getElementById("btn-verify");
+  const btnTamper    = document.getElementById("btn-tamper");
+
+  // ── helpers ──
+  function setLoading(btn, on) {
+    btn.classList.toggle("loading", on);
+    btn.disabled = on;
+  }
+
+  function showResult(blockId, json, kind = "info") {
+    const block = document.getElementById(blockId);
+    block.className = `result-block visible ${kind}`;
+    document.getElementById(blockId.replace("-result", "-json")).textContent =
+      JSON.stringify(json, null, 2);
+  }
+
+  function setTab(n) {
+    for (let i = 1; i <= 4; i++) {
+      const t = document.getElementById(`tab-${i}`);
+      t.classList.remove("active");
+      if (i < n) t.classList.add("done");
+      if (i === n) t.classList.add("active");
+    }
+  }
+
+  async function apiFetch(path, options = {}) {
+    const r = await fetch(API + path, options);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: r.statusText }));
+      throw new Error(err.detail || r.statusText);
+    }
+    return r.json();
+  }
+
+  // ── file selection ──
+  function onFileSelected(file) {
+    if (!file) return;
+    selectedFile = file;
+    fileName.textContent = `${file.name}  (${(file.size / 1024).toFixed(1)} KB)`;
+    btnUpload.disabled = false;
+  }
+
+  fileInput.addEventListener("change", () => onFileSelected(fileInput.files[0]));
+
+  dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+  dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
+    onFileSelected(e.dataTransfer.files[0]);
+  });
+
+  // ── Step 1: Upload ──
+  btnUpload.addEventListener("click", async () => {
+    setLoading(btnUpload, true);
+    try {
+      const form = new FormData();
+      form.append("file", selectedFile);
+      const data = await apiFetch("/upload", { method: "POST", body: form });
+
+      jobId = data.job_id;
+
+      document.getElementById("committed-hash").textContent = data.file_hash_sha256;
+      document.getElementById("commit-banner").classList.add("visible");
+
+      showResult("upload-result", data, "ok");
+      btnDelete.disabled = false;
+      setTab(2);
+    } catch (e) {
+      showResult("upload-result", { error: e.message }, "err");
+    } finally {
+      setLoading(btnUpload, false);
+    }
+  });
+
+  // ── Step 2: Delete ──
+  btnDelete.addEventListener("click", async () => {
+    setLoading(btnDelete, true);
+    try {
+      const data = await apiFetch(`/jobs/${jobId}/delete`, { method: "POST" });
+      showResult("delete-result", data, "ok");
+      btnReceipt.disabled = false;
+      setTab(3);
+    } catch (e) {
+      showResult("delete-result", { error: e.message }, "err");
+    } finally {
+      setLoading(btnDelete, false);
+    }
+  });
+
+  // ── Step 3: Receipt ──
+  btnReceipt.addEventListener("click", async () => {
+    setLoading(btnReceipt, true);
+    try {
+      const data = await apiFetch(`/jobs/${jobId}/receipt`);
+      receipt = data;
+
+      // timeline
+      const tl = document.getElementById("receipt-timeline");
+      const rows = [
+        ["Job ID",              data.job_id],
+        ["SHA-256 (committed)", data.file_hash_sha256],
+        ["Uploaded at",         data.uploaded_at],
+        ["Processing done",     data.processing_completed_at],
+        ["Deleted at",          data.deleted_at],
+        ["Signing scheme",      data.server_signature_ecdsa ? "ECDSA / P-256" : "HMAC-SHA256"],
+      ];
+      tl.innerHTML = rows.map(([l, v]) => `
+        <li>
+          <div class="tl-dot"></div>
+          <div class="tl-label">${l}</div>
+          <div class="tl-value">${v}</div>
+        </li>`).join("");
+      tl.classList.add("visible");
+
+      showResult("receipt-result", data, "info");
+      btnDownload.disabled = false;
+      btnVerify.disabled = false;
+      btnTamper.disabled = false;
+      setTab(4);
+    } catch (e) {
+      showResult("receipt-result", { error: e.message }, "err");
+    } finally {
+      setLoading(btnReceipt, false);
+    }
+  });
+
+  btnDownload.addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(receipt, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `deleteceipt-${jobId}.json`;
+    a.click();
+  });
+
+  // ── Step 4: Verify ──
+  async function runVerify(payload) {
+    setLoading(btnVerify, true);
+    setLoading(btnTamper, true);
+    const vr = document.getElementById("verify-result");
+    try {
+      const data = await apiFetch("/verify-receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (data.valid) {
+        vr.className = "verify-result visible valid";
+        vr.innerHTML = `
+          <div class="big-icon">✅</div>
+          <h3>Signature valid</h3>
+          <p>The ECDSA signature is authentic. The file hash in this receipt
+          matches the content committed at upload time and has not been tampered with.</p>`;
+      } else {
+        vr.className = "verify-result visible invalid";
+        vr.innerHTML = `
+          <div class="big-icon">❌</div>
+          <h3>Signature invalid</h3>
+          <p>The payload has been modified after signing. This receipt cannot
+          be trusted.</p>`;
+      }
+    } catch (e) {
+      vr.className = "verify-result visible invalid";
+      vr.innerHTML = `<div class="big-icon">⚠️</div><h3>Error</h3><p>${e.message}</p>`;
+    } finally {
+      setLoading(btnVerify, false);
+      setLoading(btnTamper, false);
+      btnVerify.disabled = false;
+      btnTamper.disabled = false;
+    }
+  }
+
+  btnVerify.addEventListener("click", () => runVerify(receipt));
+
+  btnTamper.addEventListener("click", () => {
+    // Tamper with the file hash to demonstrate that verification fails
+    const tampered = { ...receipt, file_hash_sha256: "a".repeat(64) };
+    runVerify(tampered);
+  });
+</script>
+</body>
+</html>

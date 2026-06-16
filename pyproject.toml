@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "deleteceipt"
+version = "0.1.0"
+description = "Cryptographic proof-of-deletion receipts — HMAC-SHA256 signed, hash-chained audit log"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+keywords = ["privacy", "gdpr", "deletion", "cryptography", "right-to-be-forgotten", "audit"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.optional-dependencies]
+ecdsa = ["cryptography>=42.0"]
+mongo = ["pymongo>=4.0", "motor>=3.0"]
+dev = ["pytest>=8.0", "pytest-cov", "cryptography>=42.0"]
+
+[project.scripts]
+deleteceipt = "deleteceipt.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/computeportal/deleteceipt"
+Repository = "https://github.com/computeportal/deleteceipt"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/deleteceipt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

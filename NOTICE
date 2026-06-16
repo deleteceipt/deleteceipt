@@ -1,4 +1,19 @@
-deleteceipt is an open-source implementation of the cryptographic deletion receipt
-mechanism described in USPTO Provisional Application No. 64/019,899,
-"System and Method for Generating Cryptographically Signed Deletion Receipts
-in a Document Processing Service," filed March 28, 2026, by Yoonil Choi.
+deleteceipt
+Copyright 2026 Yoonil Choi / ComputePortal, Inc.
+
+This product includes an implementation of the cryptographic deletion receipt
+mechanism described in the following patent application:
+
+  Title:         System and Method for Generating Cryptographically Signed
+                 Deletion Receipts in a Document Processing Service
+  Inventor:      Yoonil Choi
+  Application:   USPTO Provisional Application No. 64/019,899
+  Filed:         March 28, 2026 (10:03:03 AM ET)
+  Confirmation:  6890
+  Patent Center: 75058796
+  Type:          Utility — Provisional Application under 35 U.S.C. 111(b)
+
+The non-provisional application must be filed on or before March 28, 2027
+to claim priority to the above provisional application.
+
+Licensed under the Apache License, Version 2.0. See LICENSE for details.

@@ -462,6 +462,92 @@
       padding: 4px 0;
     }
 
+    /* ── BOOK ── */
+    .book-section {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .book-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 24px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+    @media (max-width: 680px) {
+      .book-inner { grid-template-columns: 1fr; gap: 32px; }
+      .book-cover-wrap { text-align: center; }
+    }
+    .book-cover-wrap { position: relative; }
+    .book-cover {
+      width: 180px;
+      border-radius: 6px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.4);
+      display: block;
+    }
+    .book-cover-wrap .kdp-badge {
+      position: absolute;
+      bottom: -10px;
+      right: -10px;
+      background: #ff9900;
+      color: #111;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+    }
+    .book-content .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 10px;
+    }
+    .book-content h2 {
+      font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .book-content .author {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .book-content blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 16px;
+      margin-bottom: 20px;
+      font-size: 15px;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .book-content .book-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+    .book-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .book-prices {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+    .book-prices span { color: var(--text); font-weight: 600; }
+
     /* ── CTA ── */
     .cta-section {
       background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,170,0.08));
@@ -528,7 +614,9 @@
     <a href="#how">How it works</a>
     <a href="#receipt">Receipt</a>
     <a href="#audit">Audit log</a>
+    <a href="#book">Book</a>
     <a href="https://github.com/deleteceipt/deleteceipt">Docs</a>
+    <a href="donate.html">Donate</a>
     <a href="https://github.com/deleteceipt/deleteceipt" class="btn-nav">GitHub ↗</a>
   </div>
 </nav>
@@ -869,6 +957,48 @@ deleteceipt verify-ecdsa receipt.json --key server_pub.pem</pre>
   </p>
 </section>
 
+<!-- ── BOOK ── -->
+<div class="book-section" id="book">
+  <div class="book-inner">
+    <div class="book-cover-wrap">
+      <img
+        class="book-cover"
+        src="https://m.media-amazon.com/images/I/71Q1oG7PAXL._SY425_.jpg"
+        alt="The Right to Be Forgotten book cover"
+        onerror="this.style.display='none'"
+      />
+      <span class="kdp-badge">KDP SELECT</span>
+    </div>
+    <div class="book-content">
+      <div class="eyebrow">The book behind the library</div>
+      <h2>The Right to Be Forgotten:<br>Privacy, Deletion, and the Architecture of Trust</h2>
+      <div class="author">by Yoonil Choi &nbsp;·&nbsp; Published April 7, 2026</div>
+      <blockquote>
+        "The delete button lies. When a user submits a deletion request, the clock starts.
+        Thirty days to comply. The policy is clear, the legal exposure is real — and then
+        someone looks at the database schema."
+      </blockquote>
+      <p class="book-desc">
+        The ideas powering <strong>deleteceipt</strong> — pre-deletion hashing, cryptographic
+        receipts, hash-chained audit logs, deletion-first architecture — are explored in full
+        in this book. Covers GDPR Article 17, the Google Spain case, filesystem deletion myths,
+        crypto-shredding, and how to build systems that can honestly prove they forget.
+      </p>
+      <div class="book-actions">
+        <a class="btn btn-primary" href="https://www.amazon.com/dp/B0GP35C79Q" target="_blank" rel="noopener">
+          Kindle — $10.99
+        </a>
+        <a class="btn btn-ghost" href="https://www.amazon.com/dp/B0GWDJ2B71" target="_blank" rel="noopener">
+          Paperback — $19.99
+        </a>
+      </div>
+      <div class="book-prices">
+        Also available free with <span>Kindle Unlimited</span> &nbsp;·&nbsp; 293 pages &nbsp;·&nbsp; ASIN: B0GP35C79Q
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── CTA ── -->
 <div class="cta-section">
   <h2>Start issuing verifiable deletion receipts</h2>
@@ -890,6 +1020,7 @@ deleteceipt verify-ecdsa receipt.json --key server_pub.pem</pre>
     <a href="https://github.com/deleteceipt/deleteceipt/blob/main/docs/legal-foundation.md">Legal context</a>
     <a href="https://github.com/deleteceipt/deleteceipt/blob/main/docs/architecture.md">Architecture</a>
     <a href="https://pypi.org/project/deleteceipt/">PyPI</a>
+    <a href="donate.html">Donate</a>
   </div>
 </footer>
 

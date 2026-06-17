@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GDPR Deletion Compliance Checker — deleteceipt</title>
+  <meta name="description" content="The only GDPR Article 17 compliance checker built for engineers. 14-section maturity assessment of your deletion pipeline, signed artifact output, sector-specific scoring for Healthcare, Financial Services, Legal, and Public Sector." />
+  <meta property="og:title" content="GDPR Deletion Compliance Checker" />
+  <meta property="og:description" content="Score your deletion pipeline across 14 technical controls. Receive a cryptographically signed compliance artifact — not just a checklist." />
+  <meta property="og:type" content="website" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --surface2:  #141620;
+      --border:    #2a2d3e;
+      --accent:    #6c63ff;
+      --accent-lo: rgba(108,99,255,0.12);
+      --accent2:   #00d4aa;
+      --accent2-lo:rgba(0,212,170,0.10);
+      --danger:    #ff4f4f;
+      --warn:      #f59e0b;
+      --text:      #e2e4f0;
+      --muted:     #7b7f9e;
+      --code-bg:   #12141f;
+      --radius:    12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,17,23,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-logo {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-sep {
+      color: var(--border);
+      font-size: 18px;
+      font-weight: 300;
+      flex-shrink: 0;
+    }
+    .nav-product {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      margin-left: auto;
+      align-items: center;
+    }
+    .nav-links a {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links .btn-nav {
+      background: var(--accent);
+      color: #fff;
+      padding: 7px 18px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .nav-links .btn-nav:hover { opacity: 0.88; text-decoration: none; }
+
+    /* ── BTN ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 26px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      text-decoration: none;
+    }
+    .btn:hover { opacity: 0.88; text-decoration: none; transform: translateY(-1px); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-success { background: var(--accent2); color: #0f1117; }
+    .btn-sm { padding: 8px 18px; font-size: 13px; }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 96px 24px 72px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 22px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 1.12rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      line-height: 1.75;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    /* ── STAT BAR ── */
+    .stat-bar {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      padding: 18px 40px;
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .stat-item .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent2);
+      flex-shrink: 0;
+    }
+    .stat-item strong { color: var(--text); }
+
+    /* ── SECTIONS ── */
+    section {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 80px 24px;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    section h2 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 14px;
+    }
+    section > p.lead {
+      color: var(--muted);
+      max-width: 640px;
+      font-size: 1rem;
+      margin-bottom: 48px;
+    }
+
+    /* ── POSITIONING ── */
+    .position-quote {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 40px;
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── WHY GRID ── */
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .why-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 28px 32px;
+    }
+    .why-card .icon { font-size: 28px; margin-bottom: 14px; }
+    .why-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .why-card p  { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* ── MATURITY SCALE ── */
+    .maturity-scale {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 48px;
+    }
+    .maturity-level {
+      padding: 24px 20px;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+    .maturity-level:last-child { border-right: none; }
+    .maturity-level .level-num {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .maturity-level .level-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .maturity-level p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .lv0 .level-num, .lv0 .level-label { color: var(--danger); }
+    .lv1 .level-num, .lv1 .level-label { color: var(--warn); }
+    .lv2 .level-num, .lv2 .level-label { color: #60a5fa; }
+    .lv3 .level-num, .lv3 .level-label { color: var(--accent); }
+    .lv4 .level-num, .lv4 .level-label { color: var(--accent2); }
+
+    /* ── SECTIONS GRID (14 controls) ── */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .control-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 24px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .control-card .ctrl-num {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      background: var(--accent-lo);
+      border-radius: 5px;
+      padding: 3px 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .control-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 5px; color: var(--text); }
+    .control-card p  { font-size: 12px; color: var(--muted); line-height: 1.55; }
+    .control-card .ctrl-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-top: 8px;
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .ctrl-critical .ctrl-tag { background: rgba(255,79,79,0.1); color: var(--danger); border-color: rgba(255,79,79,0.2); }
+    .ctrl-high     .ctrl-tag { background: rgba(245,158,11,0.1); color: var(--warn); border-color: rgba(245,158,11,0.2); }
+
+    /* ── VERTICALS ── */
+    .verticals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .vertical-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      text-align: center;
+    }
+    .vertical-card .v-icon { font-size: 28px; margin-bottom: 10px; }
+    .vertical-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .vertical-card p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .vertical-card .v-framework {
+      margin-top: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--accent2);
+    }
+
+    /* ── ARTIFACT DEMO ── */
+    .artifact-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 720px) { .artifact-demo { grid-template-columns: 1fr; } }
+    .artifact-json {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 11.5px;
+      line-height: 1.85;
+      color: var(--muted);
+      overflow-x: auto;
+    }
+    .artifact-json .key  { color: #82aaff; }
+    .artifact-json .val  { color: #c3e88d; }
+    .artifact-json .num  { color: #f78c6c; }
+    .artifact-json .hi   { color: var(--accent2); font-weight: 600; }
+    .artifact-json .sig  { color: var(--accent); }
+    .annotations {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .annotation {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .annotation .ann-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .annotation h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .annotation p  { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+    /* ── OUTPUT REPORT ── */
+    .report-tabs {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      overflow: hidden;
+      border-bottom: none;
+    }
+    .report-tab-btn {
+      padding: 10px 22px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--surface);
+      border: none;
+      border-right: 1px solid var(--border);
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .report-tab-btn:last-child { border-right: none; }
+    .report-tab-btn.active { background: var(--accent); color: #fff; }
+    .report-pane { display: none; }
+    .report-pane.active { display: block; }
+    pre.report-code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 24px 28px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      overflow-x: auto;
+      color: var(--text);
+    }
+    .rc   { color: var(--muted); }
+    .rg   { color: var(--accent2); font-weight: 700; }
+    .rr   { color: var(--danger); font-weight: 700; }
+    .ry   { color: var(--warn); }
+    .rb   { color: #82aaff; }
+    .rp   { color: var(--accent); }
+
+    /* ── COMPARE ── */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .compare-table th {
+      text-align: left;
+      padding: 14px 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table th:not(:first-child) { text-align: center; }
+    .compare-table td {
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .compare-table td:first-child { color: var(--text); font-weight: 500; }
+    .compare-table td:not(:first-child) { text-align: center; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table .yes { color: var(--accent2); font-weight: 700; }
+    .compare-table .no  { color: var(--danger); }
+    .compare-table .highlight td { background: var(--accent-lo); }
+    .compare-table .highlight td:first-child { color: var(--accent); font-weight: 700; }
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    /* ── ROADMAP ── */
+    .roadmap-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .roadmap-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .roadmap-table td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      vertical-align: top;
+    }
+    .roadmap-table td:first-child { color: var(--text); font-weight: 500; }
+    .roadmap-table tr:last-child td { border-bottom: none; }
+    .risk-critical { color: var(--danger); font-weight: 700; }
+    .risk-high { color: var(--warn); font-weight: 700; }
+    .risk-medium { color: #60a5fa; font-weight: 700; }
+    .oss-pill {
+      background: var(--accent-lo);
+      color: var(--accent);
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: "SF Mono", "Fira Code", monospace;
+      white-space: nowrap;
+    }
+
+    /* ── ECOSYSTEM ── */
+    .ecosystem {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .eco-step {
+      display: flex;
+      gap: 24px;
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+    }
+    .eco-step:last-child { border-bottom: none; }
+    .eco-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-lo);
+      border: 1px solid rgba(108,99,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .eco-content h4 { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+    .eco-content p  { font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .eco-content .eco-arrow { color: var(--accent2); font-weight: 700; margin-right: 6px; }
+
+    /* ── CLI ── */
+    .cli-demo {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .cli-titlebar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cli-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .cli-dot.red    { background: #ff5f56; }
+    .cli-dot.yellow { background: #ffbd2e; }
+    .cli-dot.green  { background: #27c93f; }
+    .cli-titlebar .cli-title {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 6px;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .cli-body {
+      padding: 22px 24px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 12px;
+      line-height: 1.9;
+      color: var(--text);
+    }
+    .cli-prompt { color: var(--accent2); }
+    .cli-cmd    { color: var(--text); }
+    .cli-out    { color: var(--muted); }
+    .cli-ok     { color: var(--accent2); font-weight: 700; }
+    .cli-fail   { color: var(--danger); font-weight: 700; }
+    .cli-score  { color: var(--accent); font-weight: 700; }
+    .cli-warn   { color: var(--warn); }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,170,0.08));
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 80px 24px;
+      text-align: center;
+    }
+    .cta-section h2 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 14px;
+    }
+    .cta-section p {
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 36px;
+      font-size: 1rem;
+    }
+    .cta-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 40px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    footer .footer-logo { color: var(--text); font-weight: 700; }
+    footer .footer-links { display: flex; gap: 20px; margin-left: auto; }
+    footer .footer-links a { color: var(--muted); }
+    footer .footer-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── DIVIDER ── */
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 680px) {
+      nav { padding: 0 20px; gap: 10px; }
+      .nav-sep, .nav-product { display: none; }
+      .nav-links { gap: 14px; }
+      .nav-links a:not(.btn-nav) { display: none; }
+      .stat-bar { padding: 18px 20px; gap: 20px; }
+      .maturity-scale { grid-template-columns: 1fr 1fr; }
+      .maturity-scale .maturity-level:nth-child(5) { border-right: none; }
+      footer { flex-direction: column; }
+      footer .footer-links { margin-left: 0; }
+    }
+    @media (max-width: 480px) {
+      .maturity-scale { grid-template-columns: 1fr; }
+      .maturity-level { border-right: none; border-bottom: 1px solid var(--border); }
+      .maturity-level:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a href="https://deleteceipt.org" class="nav-logo" style="color:var(--text);">delete<span>ceipt</span></a>
+  <span class="nav-sep">/</span>
+  <span class="nav-product">GDPR Checker</span>
+  <div class="nav-links">
+    <a href="#sections">14 Controls</a>
+    <a href="#verticals">Verticals</a>
+    <a href="#artifact">Artifact</a>
+    <a href="#runner">CI Runner</a>
+    <a href="https://github.com/deleteceipt/deleteceipt" class="btn-nav">GitHub ↗</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-badge">GDPR Article 17 · Technical Compliance</div>
+  <h1>Score your deletion pipeline.<br>Get a <em>signed artifact.</em></h1>
+  <p class="hero-sub">
+    The only GDPR compliance checker built for engineers. Assess your deletion architecture
+    across 14 technical controls — storage layers, Kafka strategies, audit logs, ML models,
+    cryptographic erasure — and receive a cryptographically signed report your auditor can verify.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="https://github.com/deleteceipt/deleteceipt/tree/main/compliance-checkers/gdpr">Run the checker →</a>
+    <a class="btn btn-ghost" href="#sections">See the 14 controls</a>
+  </div>
+</div>
+
+<!-- ── STAT BAR ── -->
+<div class="stat-bar">
+  <div class="stat-item"><div class="dot"></div><span><strong>14 sections</strong> · 55+ controls</span></div>
+  <div class="stat-item"><div class="dot"></div><span><strong>4-level maturity</strong> per control</span></div>
+  <div class="stat-item"><div class="dot"></div><span><strong>5 industry verticals</strong> with sector weights</span></div>
+  <div class="stat-item"><div class="dot"></div><span><strong>HMAC-SHA256 signed</strong> assessment artifact</span></div>
+  <div class="stat-item"><div class="dot"></div><span><strong>CI/CD integration</strong> via batch runner</span></div>
+</div>
+
+<!-- ── POSITIONING ── -->
+<section id="why">
+  <div class="section-label">Positioning</div>
+  <h2>Built for engineers, not lawyers</h2>
+  <div class="position-quote">
+    "The only GDPR compliance checker that asks whether your Elasticsearch index has a deletion
+    hook wired to your primary store — not whether you have a privacy policy."
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="icon">🧱</div>
+      <h3>Policy questions tell you nothing</h3>
+      <p>Every existing GDPR tool asks about consent mechanisms, lawful basis, and data
+      subject forms. None of them ask whether your Kafka topics use field-level encryption
+      with key deletion, or whether your reconciliation job catches orphaned directories.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon">📊</div>
+      <h3>Binary pass/fail isn't a roadmap</h3>
+      <p>A result of "partial compliance" tells your team nothing about where to focus effort.
+      The 4-level maturity model produces a prioritized remediation roadmap, not a verdict —
+      with effort estimates and direct links to the open source component that fixes each gap.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon">🔐</div>
+      <h3>Reports without signatures are promises</h3>
+      <p>A self-assessment that can be quietly revised is worthless to an auditor. Each
+      assessment produces a timestamped, HMAC-SHA256 signed artifact. A DPA or enterprise
+      customer can independently verify the artifact hasn't been modified since it was issued.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon">📈</div>
+      <h3>Re-assessment tracks progress</h3>
+      <p>The batch runner integrates into CI/CD. Run the assessment on every deploy. Each
+      artifact is independently dated — so you can demonstrate to regulators that your posture
+      improved from Foundational in Q1 to Advanced in Q3 with verifiable evidence.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ── MATURITY ── -->
+<section id="maturity">
+  <div class="section-label">Scoring model</div>
+  <h2>4-level maturity per control</h2>
+  <p class="lead">
+    Controls are scored on a maturity scale rather than binary pass/fail. A regulator seeing
+    "Implemented but not Tested" treats it more credibly than an unexplained "partial."
+  </p>
+  <div class="maturity-scale">
+    <div class="maturity-level lv0">
+      <div class="level-num">0</div>
+      <div class="level-label">None</div>
+      <p>Control does not exist. Gap is open and unaddressed.</p>
+    </div>
+    <div class="maturity-level lv1">
+      <div class="level-num">1</div>
+      <div class="level-label">Documented</div>
+      <p>Policy or design exists on paper. Not yet in production code.</p>
+    </div>
+    <div class="maturity-level lv2">
+      <div class="level-num">2</div>
+      <div class="level-label">Implemented</div>
+      <p>Code or infrastructure change is live in production.</p>
+    </div>
+    <div class="maturity-level lv3">
+      <div class="level-num">3</div>
+      <div class="level-label">Tested</div>
+      <p>Automated tests verify the control works. CI runs on every deploy.</p>
+    </div>
+    <div class="maturity-level lv4">
+      <div class="level-num">4</div>
+      <div class="level-label">Monitored</div>
+      <p>Continuous monitoring with alerting. Reconciliation jobs catch regressions.</p>
+    </div>
+  </div>
+  <p style="color:var(--muted);font-size:14px;">
+    Overall score = weighted average across all controls, expressed as a percentage and a
+    maturity tier: <strong style="color:var(--danger);">Foundational</strong> (&lt;25%) ·
+    <strong style="color:var(--warn);">Developing</strong> (&lt;50%) ·
+    <strong style="color:#60a5fa;">Advanced</strong> (&lt;75%) ·
+    <strong style="color:var(--accent2);">Exemplary</strong> (≥75%)
+  </p>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ── 14 SECTIONS ── -->
+<section id="sections">
+  <div class="section-label">Assessment structure</div>
+  <h2>14 technical control sections</h2>
+  <p class="lead">
+    Each section targets a specific layer of the deletion pipeline — from primary storage
+    and Kafka topics to ML model governance and cryptographic erasure.
+  </p>
+  <div class="controls-grid">
+    <div class="control-card ctrl-critical">
+      <span class="ctrl-num">§1</span>
+      <div>
+        <h4>Primary Storage Deletion</h4>
+        <p>Hard delete vs soft delete pipelines, coverage across all tables and collections, monitoring and alerting on deletion jobs.</p>
+        <span class="ctrl-tag">Critical</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-high">
+      <span class="ctrl-num">§2</span>
+      <div>
+        <h4>Search &amp; Derived Indexes</h4>
+        <p>Elasticsearch / OpenSearch / Solr deletion hooks, async propagation handling, post-deletion verification.</p>
+        <span class="ctrl-tag">High</span>
+      </div>
+    </div>
+    <div class="control-card">
+      <span class="ctrl-num">§3</span>
+      <div>
+        <h4>Cache Invalidation</h4>
+        <p>Redis / Memcached explicit invalidation (TTL is probabilistic, not GDPR-compliant), key pattern coverage, TTL policy documentation.</p>
+        <span class="ctrl-tag">Medium</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-critical">
+      <span class="ctrl-num">§4</span>
+      <div>
+        <h4>Message Queues &amp; Event Streams</h4>
+        <p>Kafka compacted topics, field-level encryption with key deletion, retention window documentation for personal data in event streams.</p>
+        <span class="ctrl-tag">Critical</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-high">
+      <span class="ctrl-num">§5</span>
+      <div>
+        <h4>Backup &amp; Archive Storage</h4>
+        <p>Residual retention window, backup purge process, legal hold interaction, communication to data subjects about backup retention.</p>
+        <span class="ctrl-tag">High</span>
+      </div>
+    </div>
+    <div class="control-card">
+      <span class="ctrl-num">§6</span>
+      <div>
+        <h4>Logs &amp; Observability Data</h4>
+        <p>PII inventory in logs (IP addresses, user IDs, request params), anonymization at ingestion, retention windows, record-level deletion capability.</p>
+        <span class="ctrl-tag">Medium</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-high">
+      <span class="ctrl-num">§7</span>
+      <div>
+        <h4>Third-Party Processors</h4>
+        <p>Deletion propagation to CRM, analytics, error tracking, support tools. Contractual coverage and verification mechanism per processor.</p>
+        <span class="ctrl-tag">High</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-critical">
+      <span class="ctrl-num">§8</span>
+      <div>
+        <h4>Machine Learning Models</h4>
+        <p>Training data inventory, unlearning / retraining exclusion, honest disclosure of the limits of file-level deletion vs model influence.</p>
+        <span class="ctrl-tag">Critical</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-critical">
+      <span class="ctrl-num">§9</span>
+      <div>
+        <h4>Deletion Receipt Issuance</h4>
+        <p>Cryptographically signed receipts at deletion time, canonical JSON signing, signing key rotation, key management maturity.</p>
+        <span class="ctrl-tag">Critical</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-critical">
+      <span class="ctrl-num">§10</span>
+      <div>
+        <h4>Audit Log Integrity</h4>
+        <p>Append-only audit log, hash chaining, access control separation from operational DB, on-demand chain verification.</p>
+        <span class="ctrl-tag">Critical</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-high">
+      <span class="ctrl-num">§11</span>
+      <div>
+        <h4>Legal Hold Procedures</h4>
+        <p>Hold suspension mechanism, hold notification issuance, post-hold deletion re-queue, data subject communication procedures.</p>
+        <span class="ctrl-tag">High</span>
+      </div>
+    </div>
+    <div class="control-card">
+      <span class="ctrl-num">§12</span>
+      <div>
+        <h4>Federated &amp; Multi-Node Systems</h4>
+        <p>Distributed deletion coordination, per-node acknowledgment before receipt, unreachable-node reconciliation mechanism.</p>
+        <span class="ctrl-tag">Medium</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-critical">
+      <span class="ctrl-num">§13</span>
+      <div>
+        <h4>Cryptographic Erasure</h4>
+        <p>Per-user AES-256-GCM encryption with key deletion for Kafka and backups, KMS separation, key deletion audit, disclosure to data subjects.</p>
+        <span class="ctrl-tag">Critical</span>
+      </div>
+    </div>
+    <div class="control-card ctrl-high">
+      <span class="ctrl-num">§14</span>
+      <div>
+        <h4>Deletion Testing &amp; Verification</h4>
+        <p>Integration tests against real infrastructure (not mocks), CI gating, scheduled audit jobs, out-of-band verification scripts.</p>
+        <span class="ctrl-tag">High</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ── VERTICALS ── -->
+<section id="verticals">
+  <div class="section-label">Industry verticals</div>
+  <h2>Sector-weighted scoring</h2>
+  <p class="lead">
+    Select your industry at the start. Controls are reweighted by regulatory priority, and the
+    report maps each control to the specific framework requirement for your sector.
+  </p>
+  <div class="verticals-grid">
+    <div class="vertical-card">
+      <div class="v-icon">☁️</div>
+      <h4>General SaaS</h4>
+      <p>Equal weights across all controls. Deletion and disposal domain.</p>
+      <div class="v-framework">SOC 2 Type II</div>
+    </div>
+    <div class="vertical-card">
+      <div class="v-icon">🏥</div>
+      <h4>Healthcare</h4>
+      <p>Elevated: receipt issuance, audit log, legal hold. 6-year documentation.</p>
+      <div class="v-framework">HIPAA + HITRUST</div>
+    </div>
+    <div class="vertical-card">
+      <div class="v-icon">🏦</div>
+      <h4>Financial Services</h4>
+      <p>Elevated: backup archive, legal hold, federated systems.</p>
+      <div class="v-framework">SEC · FINRA · MiFID II</div>
+    </div>
+    <div class="vertical-card">
+      <div class="v-icon">⚖️</div>
+      <h4>Legal Services</h4>
+      <p>Highest weight on legal hold procedures. Client confidentiality.</p>
+      <div class="v-framework">ABA Rules · FRCP</div>
+    </div>
+    <div class="vertical-card">
+      <div class="v-icon">🏛️</div>
+      <h4>Public Sector / EU</h4>
+      <p>Elevated: receipt issuance, audit log, federated systems, third-party processors.</p>
+      <div class="v-framework">EDPB · NIS2 · eIDAS</div>
+    </div>
+  </div>
+  <p style="color:var(--muted);font-size:13px;">
+    Cross-framework mapping is included in every report. Each scored control links to the
+    specific article or rule number for your selected vertical.
+  </p>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ── ARTIFACT ── -->
+<section id="artifact">
+  <div class="section-label">Signed output</div>
+  <h2>The compliance artifact</h2>
+  <p class="lead">
+    Every assessment produces a JSON artifact signed with HMAC-SHA256 over canonical JSON.
+    The artifact can be verified independently using the public CLI — without trusting the server.
+  </p>
+  <div class="artifact-demo">
+    <div class="artifact-json">
+<span style="color:var(--muted)">{</span>
+  <span class="key">"payload"</span>: {
+    <span class="key">"assessment_id"</span>:  <span class="val">"assess_7f3a2c1d-..."</span>,
+    <span class="key">"organization_id"</span>: <span class="val">"org_8e4a1f9d"</span>,
+    <span class="key">"completed_at"</span>:    <span class="hi">"2026-06-17T14:30:00Z"</span>,
+    <span class="key">"vertical"</span>:         <span class="val">"healthcare"</span>,
+    <span class="key">"overall_score"</span>:    <span class="num">61.4</span>,
+    <span class="key">"maturity_tier"</span>:    <span class="hi">"Advanced"</span>,
+    <span class="key">"section_scores"</span>: {
+      <span class="key">"primary_storage"</span>:         <span class="num">85</span>,
+      <span class="key">"search_indexes"</span>:          <span class="num">57</span>,
+      <span class="key">"cache_invalidation"</span>:      <span class="num">68</span>,
+      <span class="key">"message_queues"</span>:          <span class="num">43</span>,
+      <span class="key">"deletion_receipt_issuance"</span>: <span class="num">0</span>,
+      <span class="key">"audit_log_integrity"</span>:     <span class="num">50</span>,
+      <span class="key">"cryptographic_erasure"</span>:   <span class="num">0</span>,
+      <span style="color:var(--muted)">...13 more sections...</span>
+    },
+    <span class="key">"critical_gaps"</span>: [
+      <span class="val">"deletion_receipt_issuance"</span>,
+      <span class="val">"cryptographic_erasure"</span>,
+      <span class="val">"ml_models"</span>
+    ],
+    <span class="key">"schema_version"</span>: <span class="val">"1.0"</span>
+  },
+  <span class="key">"signature"</span>: <span class="sig">"9xK4mP2q...F0gH2iJ5"</span>,
+  <span class="key">"signing_key_id"</span>: <span class="val">"checker/v1/2026-01-01"</span>
+<span style="color:var(--muted)">}</span>
+    </div>
+    <div class="annotations">
+      <div class="annotation">
+        <div class="ann-dot" style="background:var(--accent2)"></div>
+        <div>
+          <h4>assessment_id</h4>
+          <p>UUID4 prefix — every assessment is unique and independently referenceable. Re-run after remediation and both artifacts coexist with different IDs.</p>
+        </div>
+      </div>
+      <div class="annotation">
+        <div class="ann-dot" style="background:#82aaff"></div>
+        <div>
+          <h4>organization_id</h4>
+          <p>An anonymized hash or identifier you supply. No organization name is stored server-side.</p>
+        </div>
+      </div>
+      <div class="annotation">
+        <div class="ann-dot" style="background:var(--warn)"></div>
+        <div>
+          <h4>section_scores</h4>
+          <p>Per-section percentage score, weighted by your selected vertical. Sections at 0% are critical gaps regardless of overall tier.</p>
+        </div>
+      </div>
+      <div class="annotation">
+        <div class="ann-dot" style="background:var(--accent)"></div>
+        <div>
+          <h4>signature</h4>
+          <p>HMAC-SHA256 over <code style="font-family:monospace;color:var(--accent)">json.dumps(payload, sort_keys=True)</code>. Anyone with the key can verify — no server needed.</p>
+        </div>
+      </div>
+      <div class="annotation">
+        <div class="ann-dot" style="background:var(--danger)"></div>
+        <div>
+          <h4>critical_gaps</h4>
+          <p>Sections scoring below 25% — where regulatory risk exposure is highest. These are the first items in the remediation roadmap.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ── REPORT OUTPUTS ── -->
+<section id="report">
+  <div class="section-label">Report outputs</div>
+  <h2>What the operator receives</h2>
+  <p class="lead">
+    Every assessment produces a signed JSON artifact plus a human-readable report with
+    scorecard, gap analysis, remediation roadmap, and cross-framework mapping.
+  </p>
+  <div class="report-tabs">
+    <button class="report-tab-btn active" onclick="showReport('scorecard', this)">Scorecard</button>
+    <button class="report-tab-btn" onclick="showReport('gaps', this)">Gap Analysis</button>
+    <button class="report-tab-btn" onclick="showReport('roadmap', this)">Roadmap</button>
+    <button class="report-tab-btn" onclick="showReport('verify', this)">Verify</button>
+  </div>
+  <div id="rp-scorecard" class="report-pane active">
+<pre class="report-code">
+<span class="rc">================================================================</span>
+<span class="rg">GDPR COMPLIANCE ASSESSMENT REPORT</span>
+<span class="rc">================================================================</span>
+Assessment ID : assess_7f3a2c1d-9b4e-4f8a-b2e1-7c3d5a9f0e6b
+Organization  : org_8e4a1f9d
+Completed At  : 2026-06-17T14:30:00.000000+00:00
+Vertical      : healthcare
+
+<span class="rc">----------------------------------------------------------------</span>
+<span class="rb">OVERALL SCORECARD</span>
+<span class="rc">----------------------------------------------------------------</span>
+Overall Score : <span class="rg">61.4 / 100</span>
+Maturity Tier : <span class="rb">Advanced</span>
+
+<span class="rc">----------------------------------------------------------------</span>
+<span class="rb">SECTION SCORES</span>
+<span class="rc">----------------------------------------------------------------</span>
+  Primary Storage Deletion        [################....] <span class="rg"> 85.2%</span>
+  Cache Invalidation              [#############.......] <span class="rg"> 68.4%</span>
+  Audit Log Integrity             [#############.......] <span class="rg"> 68.2%</span>
+  Third-Party Processor Deletion  [############........] <span class="rg"> 63.2%</span>
+  Logs and Observability Data     [############........] <span class="rg"> 60.1%</span>
+  Deletion Receipt Issuance       [############........] <span class="rg"> 60.9%</span>
+  Message Queue Deletion          [###########.........] <span class="ry"> 57.1%</span>
+  Search Index Deletion           [###########.........] <span class="ry"> 57.1%</span>
+  Backup and Archive Deletion     [###########.........] <span class="ry"> 55.1%</span>
+  Deletion Testing                [###########.........] <span class="ry"> 55.8%</span>
+  Legal Hold Procedures           [#########...........] <span class="ry"> 45.4%</span>
+  Cryptographic Erasure           [##########..........] <span class="ry"> 50.0%</span>
+  ML Model Data Deletion          [#######.............] <span class="rr"> 35.5%</span>
+  Federated System Deletion       [#######.............] <span class="rr"> 37.9%</span>
+</pre>
+  </div>
+  <div id="rp-gaps" class="report-pane">
+<pre class="report-code">
+<span class="rc">----------------------------------------------------------------</span>
+<span class="rr">CRITICAL GAP ANALYSIS</span>
+<span class="rc">----------------------------------------------------------------</span>
+Sections scoring below the Documented threshold (25%):
+
+  <span class="rr">ML Model Data Deletion</span> (ml_models) — score: 35.5%
+    * Training data not inventoried      [Risk: Critical] [Effort: Medium]
+    * No unlearning or exclusion policy  [Risk: Critical] [Effort: High]
+    * Limits not disclosed to subjects   [Risk: High]     [Effort: Low]
+
+  <span class="rr">Federated System Deletion</span> (federated_systems) — score: 37.9%
+    * No distributed deletion coord.     [Risk: Critical] [Effort: High]
+    * No per-node acknowledgment         [Risk: High]     [Effort: Medium]
+    * No unreachable-node reconciliation [Risk: High]     [Effort: Medium]
+
+<span class="rc">Additional sections requiring attention:</span>
+  Legal Hold Procedures   — 45.4%  (no hold notification issuance)
+  Cryptographic Erasure   — 50.0%  (KMS not separated from data)
+</pre>
+  </div>
+  <div id="rp-roadmap" class="report-pane">
+<pre class="report-code">
+<span class="rc">----------------------------------------------------------------</span>
+<span class="rb">REMEDIATION ROADMAP</span>  (priority: Critical → High → Medium)
+<span class="rc">----------------------------------------------------------------</span>
+
+  <span class="rr">[Critical]</span> ML Model Data Deletion — Training data not inventoried
+             Gap: No inventory of training sets with personal data
+             Effort: Medium  |  Recommended tool: <span class="rp">deleteceipt</span>
+             Reference: Ch. 14.1, 14.4
+
+  <span class="rr">[Critical]</span> Federated System Deletion — No distributed coord.
+             Gap: Deletion not propagated to all nodes before receipt
+             Effort: High  |  Recommended tool: <span class="rp">deleteceipt-reconcile</span>
+             Reference: Ch. 14.2
+
+  <span class="ry">[High]    </span> Legal Hold Procedures — No hold notification
+             Gap: Hold existence not documented when deletion blocked
+             Effort: Medium  |  Recommended tool: <span class="rp">legal-hold-gate</span>
+             Reference: Ch. 14.3
+
+<span class="rc">----------------------------------------------------------------</span>
+<span class="rb">CROSS-FRAMEWORK MAPPINGS (healthcare)</span>
+<span class="rc">----------------------------------------------------------------</span>
+  Deletion Receipt Issuance : HIPAA §164.530(j), HIPAA §164.528
+  Audit Log Integrity        : HIPAA §164.312(b), HITRUST CSF 09.ab
+  Legal Hold Procedures      : HIPAA §164.316(b)(2)(i)
+  Cryptographic Erasure      : HIPAA §164.312(a)(2)(iv)
+  Deletion Testing           : HIPAA §164.308(a)(8)
+</pre>
+  </div>
+  <div id="rp-verify" class="report-pane">
+<pre class="report-code">
+<span class="rc"># Independent verification — stdlib only, no package import needed</span>
+<span class="rg">$</span> python verify_assessment.py assessment_2026-06-17.json \
+    --key-env GDPR_SIGNING_KEY
+
+<span class="rg">✓ VALID</span>
+  Assessment ID : assess_7f3a2c1d-9b4e-4f8a-b2e1-7c3d5a9f0e6b
+  Completed At  : 2026-06-17T14:30:00.000000+00:00
+  Vertical      : healthcare
+  Overall Score : 61.4 / 100
+  Maturity Tier : Advanced
+  Signature     : 9xK4mP2q...verified
+
+<span class="rc"># The verifier re-computes HMAC-SHA256 over json.dumps(payload, sort_keys=True)</span>
+<span class="rc"># and uses hmac.compare_digest() — safe against timing attacks.</span>
+<span class="rc"># Anyone with the signing key can verify; no server contact required.</span>
+</pre>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ── CI RUNNER ── -->
+<section id="runner">
+  <div class="section-label">CI/CD integration</div>
+  <h2>Automate compliance gating</h2>
+  <p class="lead">
+    The batch runner reads a YAML config with pre-scored answers, runs the assessment
+    headlessly, and exits 0 (pass) or 1 (fail) based on a configurable score threshold.
+    Drop it into your pipeline.
+  </p>
+  <div class="cli-demo">
+    <div class="cli-titlebar">
+      <div class="cli-dot red"></div>
+      <div class="cli-dot yellow"></div>
+      <div class="cli-dot green"></div>
+      <span class="cli-title">CI · GDPR compliance gate</span>
+    </div>
+    <div class="cli-body">
+<span class="cli-prompt">$</span> <span class="cli-cmd">GDPR_SIGNING_KEY=$SECRET python -m dashboard.runner \</span>
+<span class="cli-cmd">    --config operator.yaml --output assessments/</span>
+<br>
+<span class="cli-out">================================================================</span>
+<span class="cli-out">GDPR COMPLIANCE ASSESSMENT — BATCH RUNNER SUMMARY</span>
+<span class="cli-out">================================================================</span>
+<span class="cli-out">  Organization : org_8e4a1f9d</span>
+<span class="cli-out">  Vertical     : healthcare</span>
+<span class="cli-out">  Completed At : 2026-06-17T14:30:00.000000+00:00</span>
+<span class="cli-score">  Overall Score: 61.4 / 100</span>
+<span class="cli-score">  Maturity Tier: Advanced</span>
+<span class="cli-out">  Critical Gaps: 2</span>
+<span class="cli-out">  Artifact     : assessments/org_8e4a1f9d_20260617T143000Z.json</span>
+<span class="cli-out">----------------------------------------------------------------</span>
+<span class="cli-out">  Section                              Score   Status</span>
+<span class="cli-out">----------------------------------------------------------------</span>
+<span class="cli-out">  Primary Storage Deletion             85.2%</span>
+<span class="cli-out">  Audit Log Integrity                  68.2%</span>
+<span class="cli-warn">  Message Queue &amp; Event Stream         57.1%</span>
+<span class="cli-fail">  ML Model Data Deletion               35.5%   ← gap</span>
+<span class="cli-fail">  Federated System Deletion            37.9%   ← gap</span>
+<span class="cli-out">  ...</span>
+<span class="cli-out">================================================================</span>
+<br>
+<span class="cli-ok">[PASS]</span> <span class="cli-out">Score 61.4 ≥ threshold 50.0</span>
+<br>
+<span class="cli-out"># Exit code 0 → CI pipeline continues</span>
+<span class="cli-out"># Exit code 1 → CI pipeline blocks deploy</span>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ── COMPARE ── -->
+<section id="compare">
+  <div class="section-label">Comparison</div>
+  <h2>What makes this different</h2>
+  <p class="lead">No existing GDPR checker goes to this depth on the deletion pipeline.</p>
+  <div class="table-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Existing GDPR tools</th>
+          <th>This checker</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Audience</td>
+          <td class="no">Lawyers &amp; DPOs</td>
+          <td class="yes">Engineers &amp; security teams</td>
+        </tr>
+        <tr>
+          <td>Depth of questions</td>
+          <td class="no">Privacy policies, consent mechanisms</td>
+          <td class="yes">TTL pipelines, Kafka strategies, hash chaining</td>
+        </tr>
+        <tr>
+          <td>Output format</td>
+          <td class="no">Binary pass/fail</td>
+          <td class="yes">4-level maturity with prioritized roadmap</td>
+        </tr>
+        <tr>
+          <td>Sector weighting</td>
+          <td class="no">Generic</td>
+          <td class="yes">5 verticals with cross-framework mappings</td>
+        </tr>
+        <tr>
+          <td>Remediation path</td>
+          <td class="no">None</td>
+          <td class="yes">Every gap links to an open source component</td>
+        </tr>
+        <tr class="highlight">
+          <td>Verifiable artifact</td>
+          <td class="no">None</td>
+          <td class="yes">HMAC-SHA256 signed, independently verifiable</td>
+        </tr>
+        <tr>
+          <td>CI/CD integration</td>
+          <td class="no">Not supported</td>
+          <td class="yes">Batch runner with configurable score gate</td>
+        </tr>
+        <tr>
+          <td>Progress tracking</td>
+          <td class="no">One-time</td>
+          <td class="yes">Each re-assessment is dated and independently signed</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ── ROADMAP TABLE ── -->
+<section id="remediation">
+  <div class="section-label">Remediation roadmap format</div>
+  <h2>Every gap links to an open source fix</h2>
+  <p class="lead">
+    Critical gaps in the compliance report link directly to the open source component that
+    addresses them — so the assessment is also a prioritized engineering backlog.
+  </p>
+  <div class="table-wrap">
+    <table class="roadmap-table">
+      <thead>
+        <tr>
+          <th>Gap</th>
+          <th>Risk</th>
+          <th>Effort</th>
+          <th>Open Source Component</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>No deletion receipt issuance</td>
+          <td class="risk-critical">Critical</td>
+          <td>Medium</td>
+          <td><span class="oss-pill">deleteceipt</span></td>
+          <td style="color:var(--muted)">Ch. 9–11</td>
+        </tr>
+        <tr>
+          <td>No ML model data governance disclosure</td>
+          <td class="risk-high">High</td>
+          <td>Low</td>
+          <td><span class="oss-pill">deletion-inventory</span></td>
+          <td style="color:var(--muted)">Ch. 14.1, 14.4</td>
+        </tr>
+        <tr>
+          <td>No cryptographic erasure for Kafka / backups</td>
+          <td class="risk-high">High</td>
+          <td>High</td>
+          <td><span class="oss-pill">crypto-shredder</span></td>
+          <td style="color:var(--muted)">Ch. 15.2, 16.3</td>
+        </tr>
+        <tr>
+          <td>Backup purge process undocumented</td>
+          <td class="risk-high">High</td>
+          <td>Low</td>
+          <td>Policy documentation</td>
+          <td style="color:var(--muted)">Ch. 14.3</td>
+        </tr>
+        <tr>
+          <td>No third-party processor verification</td>
+          <td class="risk-medium">Medium</td>
+          <td>Medium</td>
+          <td><span class="oss-pill">deleteceipt-enterprise</span></td>
+          <td style="color:var(--muted)">Ch. 15.1</td>
+        </tr>
+        <tr>
+          <td>Deletion pipeline untested against real infra</td>
+          <td class="risk-medium">Medium</td>
+          <td>Medium</td>
+          <td><span class="oss-pill">deletion-audit-test</span></td>
+          <td style="color:var(--muted)">Ch. 15.5</td>
+        </tr>
+        <tr>
+          <td>No audit log hash chaining</td>
+          <td class="risk-medium">Medium</td>
+          <td>Medium</td>
+          <td><span class="oss-pill">deleteceipt-audit</span></td>
+          <td style="color:var(--muted)">Ch. 10</td>
+        </tr>
+        <tr>
+          <td>Legal hold procedure missing</td>
+          <td class="risk-medium">Medium</td>
+          <td>Medium</td>
+          <td><span class="oss-pill">legal-hold-gate</span></td>
+          <td style="color:var(--muted)">Ch. 14.3</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ── ECOSYSTEM ── -->
+<section id="ecosystem">
+  <div class="section-label">The ecosystem</div>
+  <h2>Assessment → remediation → re-assessment</h2>
+  <p class="lead">
+    The compliance checker is the entry point to the deleteceipt ecosystem. It is not just
+    a diagnostic — it is a curriculum that walks an organization from zero to exemplary
+    deletion compliance, with open source tools at every step.
+  </p>
+  <div class="ecosystem">
+    <div class="eco-step">
+      <div class="eco-num">1</div>
+      <div class="eco-content">
+        <h4>Run the assessment → discover receipt gap (level 0)</h4>
+        <p>The checker identifies that no deletion receipt is issued at deletion time. Critical gap in §9 — highest regulatory risk.</p>
+      </div>
+    </div>
+    <div class="eco-step">
+      <div class="eco-num">2</div>
+      <div class="eco-content">
+        <h4>Remediation roadmap points to <code style="font-family:monospace;color:var(--accent)">deleteceipt v0.1.0</code></h4>
+        <p><code style="font-family:monospace;color:var(--accent2)">pip install deleteceipt</code> — integrate HMAC-SHA256 signed receipts into your deletion pipeline. Zero dependencies.</p>
+      </div>
+    </div>
+    <div class="eco-step">
+      <div class="eco-num">3</div>
+      <div class="eco-content">
+        <h4>Re-run assessment → §9 moves from level 0 to level 2</h4>
+        <p>Receipt issuance is now Implemented. New signed artifact is dated independently. Both artifacts coexist — auditors can compare them.</p>
+      </div>
+    </div>
+    <div class="eco-step">
+      <div class="eco-num">4</div>
+      <div class="eco-content">
+        <h4>Add integration tests → level 2 to level 3</h4>
+        <p>Wire <code style="font-family:monospace;color:var(--accent2)">deletion-audit-test</code> into CI. Tests verify deletion across each real storage layer on every deploy.</p>
+      </div>
+    </div>
+    <div class="eco-step">
+      <div class="eco-num">5</div>
+      <div class="eco-content">
+        <h4>Deploy reconciliation with monitoring → level 3 to level 4</h4>
+        <p><code style="font-family:monospace;color:var(--accent2)">deleteceipt-reconcile</code> catches Type-A (no receipt) and Type-B (orphaned directory) discrepancies. Reconciliation runs on a schedule with alerting.</p>
+      </div>
+    </div>
+    <div class="eco-step">
+      <div class="eco-num">6</div>
+      <div class="eco-content">
+        <h4>Export enterprise receipts → present to your own customers</h4>
+        <p><code style="font-family:monospace;color:var(--accent2)">deleteceipt-enterprise</code> generates GDPR Article 30 receipts for vendor management evidence. Your compliance becomes your customers' compliance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<div class="cta-section">
+  <h2>Run your first assessment today</h2>
+  <p>
+    Open source under Apache 2.0. Self-hosted, no data leaves your machine.
+    Signing key stays in your secrets manager.
+  </p>
+  <div class="cta-actions">
+    <a class="btn btn-primary" href="https://github.com/deleteceipt/deleteceipt/tree/main/compliance-checkers/gdpr">View on GitHub →</a>
+    <a class="btn btn-ghost" href="https://deleteceipt.org">Back to deleteceipt.org</a>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <span class="footer-logo">delete<span style="color:var(--accent)">ceipt</span></span>
+  <span>GDPR Article 17 Compliance Checker</span>
+  <div class="footer-links">
+    <a href="https://deleteceipt.org">deleteceipt.org</a>
+    <a href="https://github.com/deleteceipt/deleteceipt">GitHub</a>
+    <a href="https://deleteceipt.org/docs.html">Docs</a>
+    <a href="https://www.amazon.com/dp/B0GP35C79Q">Book</a>
+  </div>
+</footer>
+
+<script>
+  function showReport(id, btn) {
+    document.querySelectorAll('.report-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.report-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('rp-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+
+</body>
+</html>

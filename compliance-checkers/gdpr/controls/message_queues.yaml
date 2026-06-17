@@ -1,0 +1,47 @@
+section: message_queues
+title: "Message Queue and Event Stream Deletion"
+source: "Chapter 15.4"
+controls:
+  - id: queue_retention_bounded
+    label: "Queue retention period bounded"
+    description: "Message queues (Kafka, SQS, RabbitMQ, etc.) holding personal data have a maximum retention period aligned with the erasure SLA"
+    weight: 1.0
+    remediation:
+      gap_label: "Unbounded queue retention"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.4"
+
+  - id: event_tombstoning
+    label: "Tombstone or compaction for event streams"
+    description: "Kafka compacted topics or equivalent use tombstone records so personal data is removed on compaction"
+    weight: 0.9
+    remediation:
+      gap_label: "No tombstone/compaction strategy for events"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.4"
+
+  - id: consumer_notification
+    label: "Downstream consumers notified of deletion"
+    description: "Deletion events are propagated to downstream queue consumers so they can purge their own stores"
+    weight: 0.9
+    remediation:
+      gap_label: "Downstream consumers not notified"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.4"
+
+  - id: dead_letter_queue_purge
+    label: "Dead-letter queues included in deletion scope"
+    description: "DLQs and retry queues that may hold personal data payloads are also purged on erasure"
+    weight: 0.7
+    remediation:
+      gap_label: "Dead-letter queues not purged"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.4"

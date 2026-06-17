@@ -1,0 +1,58 @@
+section: deletion_receipt_issuance
+title: "Deletion Receipt Issuance"
+source: "Chapter 15.9"
+controls:
+  - id: receipt_issued_for_every_request
+    label: "Receipt issued for every erasure request"
+    description: "A cryptographically signed deletion receipt is generated and provided for every erasure request, including automated and bulk deletions"
+    weight: 1.0
+    remediation:
+      gap_label: "Receipts not issued for all erasure requests"
+      risk_level: "Critical"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.9"
+
+  - id: receipt_cryptographic_integrity
+    label: "Receipt has cryptographic integrity guarantee"
+    description: "Deletion receipts are signed with HMAC-SHA256 or asymmetric signature, enabling independent verification by the data subject or auditor"
+    weight: 1.0
+    remediation:
+      gap_label: "Receipts lack cryptographic integrity"
+      risk_level: "Critical"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.9"
+
+  - id: receipt_scope_documented
+    label: "Receipt documents scope of deletion"
+    description: "The receipt specifies which data categories and systems were deleted, providing clear evidence of scope"
+    weight: 0.9
+    remediation:
+      gap_label: "Receipt scope not documented"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.9"
+
+  - id: receipt_retention
+    label: "Receipts retained for the required period"
+    description: "Deletion receipts are retained for the legally required period (typically the statute of limitations for GDPR complaints) without storing the deleted personal data"
+    weight: 0.9
+    remediation:
+      gap_label: "Receipts not retained"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.9"
+
+  - id: receipt_verifiability
+    label: "Receipts independently verifiable"
+    description: "Data subjects or regulators can verify receipts using a public tool or documented verification procedure without requiring the organisation's cooperation"
+    weight: 0.8
+    remediation:
+      gap_label: "Receipts not independently verifiable"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.9"

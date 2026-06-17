@@ -1,0 +1,47 @@
+section: audit_log_integrity
+title: "Audit Log Integrity"
+source: "Chapter 15.10"
+controls:
+  - id: audit_log_for_all_deletions
+    label: "Audit log entry for every deletion event"
+    description: "Every deletion operation — whether triggered by a user request, automated pipeline, or administrator action — generates an immutable audit log entry"
+    weight: 1.0
+    remediation:
+      gap_label: "Deletion events not fully logged"
+      risk_level: "Critical"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.10"
+
+  - id: audit_log_tamper_protection
+    label: "Audit log is tamper-evident"
+    description: "Audit log entries are protected against tampering via hash-chaining, append-only storage, WORM media, or external signing"
+    weight: 1.0
+    remediation:
+      gap_label: "Audit log not tamper-evident"
+      risk_level: "Critical"
+      effort: "Medium"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.10"
+
+  - id: audit_log_retention
+    label: "Audit log retained for required period"
+    description: "Audit logs are retained for the legally required period (minimum 3 years for GDPR accountability, longer for regulated sectors)"
+    weight: 0.9
+    remediation:
+      gap_label: "Audit log retention period too short"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.10"
+
+  - id: audit_log_access_controls
+    label: "Audit log access restricted and monitored"
+    description: "Only authorised roles can access audit logs; access to logs is itself logged"
+    weight: 0.8
+    remediation:
+      gap_label: "Audit log access not restricted"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.10"

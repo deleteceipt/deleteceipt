@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EU AI Act Art. 14 — Human Oversight Compliance Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0f172a;
+    --bg2:      #1e293b;
+    --bg3:      #334155;
+    --border:   #475569;
+    --text:     #f1f5f9;
+    --muted:    #94a3b8;
+    --blue:     #3b82f6;
+    --blue-d:   #2563eb;
+    --green:    #22c55e;
+    --amber:    #f59e0b;
+    --red:      #ef4444;
+    --gray:     #6b7280;
+    --green-bg: rgba(34,197,94,0.15);
+    --amber-bg: rgba(245,158,11,0.15);
+    --red-bg:   rgba(239,68,68,0.15);
+    --gray-bg:  rgba(107,114,128,0.15);
+    --blue-bg:  rgba(59,130,246,0.15);
+  }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Screens ── */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ── Setup Screen ── */
+  #setup-screen {
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px 20px 60px;
+  }
+  .setup-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px 48px;
+    width: 100%;
+    max-width: 680px;
+  }
+  .setup-card h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .setup-card .subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 32px;
+  }
+  .form-group { margin-bottom: 22px; }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+  .form-group input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-group input[type="text"]:focus { border-color: var(--blue); }
+  .role-group { display: flex; gap: 12px; }
+  .role-btn {
+    flex: 1;
+    padding: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .role-btn.selected {
+    background: var(--blue-bg);
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .sectors-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .sector-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    user-select: none;
+  }
+  .sector-item:hover { border-color: var(--blue); }
+  .sector-item input[type="checkbox"] { accent-color: var(--blue); width: 15px; height: 15px; cursor: pointer; }
+  .sector-item span { font-size: 12px; color: var(--text); }
+  .biometric-note {
+    font-size: 11px;
+    color: var(--amber);
+    margin-top: 6px;
+  }
+  .start-btn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 13px;
+    background: var(--blue);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .start-btn:hover { background: var(--blue-d); }
+  .start-btn:disabled { background: var(--bg3); color: var(--muted); cursor: not-allowed; }
+
+  /* ── Assessment Screen ── */
+  #assess-screen { flex-direction: column; height: 100vh; overflow: hidden; }
+
+  /* Top Bar */
+  .top-bar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+    min-height: 64px;
+  }
+  .top-bar-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .top-bar-title span { color: var(--text); }
+  .top-bar-spacer { flex: 1; }
+  .score-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .score-pct {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--blue);
+    min-width: 64px;
+    text-align: right;
+  }
+  .score-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .score-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+  }
+  .pill-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .pill-dot.compliant { background: var(--green); }
+  .pill-dot.partial   { background: var(--amber); }
+  .pill-dot.gap       { background: var(--red); }
+  .pill-dot.skip      { background: var(--gray); }
+  .score-pill .count { font-weight: 700; color: var(--text); min-width: 18px; }
+  .score-pill .label { color: var(--muted); }
+  #donut-svg { flex-shrink: 0; }
+  .progress-track {
+    flex: 1;
+    max-width: 200px;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .progress-bar-outer {
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  /* Main layout */
+  .assess-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    flex-shrink: 0;
+    padding: 16px 0;
+  }
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0 16px 8px;
+  }
+  .section-nav-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border-left: 3px solid transparent;
+  }
+  .section-nav-item:hover { background: var(--bg3); }
+  .section-nav-item.active {
+    background: var(--blue-bg);
+    border-left-color: var(--blue);
+  }
+  .section-nav-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .section-letter {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--bg3);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .section-nav-item.active .section-letter { background: var(--blue); }
+  .section-nav-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .section-stats {
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 5px;
+    padding-left: 32px;
+  }
+  .mini-progress {
+    display: flex;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--bg3);
+    margin-left: 32px;
+    gap: 1px;
+  }
+  .mini-seg {
+    flex: 1;
+    height: 100%;
+  }
+  .mini-seg.compliant { background: var(--green); }
+  .mini-seg.partial   { background: var(--amber); }
+  .mini-seg.gap       { background: var(--red); }
+  .mini-seg.skip      { background: var(--gray); }
+  .mini-seg.unanswered { background: var(--bg3); }
+
+  /* Main panel */
+  .main-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+  }
+  .check-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .check-id {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--bg3);
+    padding: 3px 10px;
+    border-radius: 5px;
+  }
+  .article-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--blue);
+    background: var(--blue-bg);
+    padding: 3px 9px;
+    border-radius: 5px;
+    border: 1px solid rgba(59,130,246,0.3);
+  }
+  .section-tag {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--bg3);
+    padding: 3px 9px;
+    border-radius: 5px;
+  }
+  .biometric-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--amber);
+    background: var(--amber-bg);
+    padding: 3px 9px;
+    border-radius: 5px;
+    border: 1px solid rgba(245,158,11,0.3);
+  }
+  .check-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .check-requirement {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.65;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: var(--bg2);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 7px 7px 0;
+  }
+  .evidence-details {
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .evidence-details summary {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--bg2);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+  }
+  .evidence-details summary::-webkit-details-marker { display: none; }
+  .evidence-details summary::before {
+    content: '▶';
+    font-size: 9px;
+    transition: transform 0.2s;
+    display: inline-block;
+  }
+  .evidence-details[open] summary::before { transform: rotate(90deg); }
+  .evidence-body {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+
+  /* Answer buttons */
+  .answer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .answer-btn {
+    padding: 14px 8px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg2);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  .answer-btn .btn-icon { font-size: 18px; }
+  .answer-btn .btn-key {
+    font-size: 10px;
+    opacity: 0.5;
+    font-weight: 400;
+  }
+  .answer-btn:hover { border-color: var(--blue); color: var(--text); background: var(--bg3); }
+  .answer-btn.selected-compliant { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+  .answer-btn.selected-partial   { border-color: var(--amber); background: var(--amber-bg); color: var(--amber); }
+  .answer-btn.selected-gap       { border-color: var(--red);   background: var(--red-bg);   color: var(--red); }
+  .answer-btn.selected-skip      { border-color: var(--gray);  background: var(--gray-bg);  color: var(--gray); }
+
+  .notes-area {
+    display: none;
+    margin-bottom: 18px;
+  }
+  .notes-area.visible { display: block; }
+  .notes-area label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .notes-area textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .notes-area textarea:focus { border-color: var(--blue); }
+
+  /* Nav buttons */
+  .nav-row {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .nav-btn {
+    padding: 10px 22px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { background: var(--bg3); border-color: var(--blue); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav-btn.primary {
+    background: var(--blue);
+    border-color: var(--blue);
+    font-weight: 600;
+  }
+  .nav-btn.primary:hover { background: var(--blue-d); }
+  .nav-spacer { flex: 1; }
+  .check-counter {
+    font-size: 12px;
+    color: var(--muted);
+    align-self: center;
+  }
+  .finish-btn {
+    padding: 10px 22px;
+    border-radius: 7px;
+    border: none;
+    background: var(--green);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: none;
+  }
+  .finish-btn.visible { display: inline-block; }
+  .finish-btn:hover { background: #16a34a; }
+
+  /* ── Results Screen ── */
+  #results-screen {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .results-header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .results-header h1 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .overall-badge {
+    font-size: 15px;
+    font-weight: 700;
+    padding: 7px 18px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+  }
+  .overall-badge.compliant      { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34,197,94,0.4); }
+  .overall-badge.conditional    { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(245,158,11,0.4); }
+  .overall-badge.non-compliant  { background: var(--red-bg);   color: var(--red);   border: 1px solid rgba(239,68,68,0.4); }
+  .results-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+  }
+  .export-btn {
+    padding: 9px 18px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .export-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .new-btn {
+    padding: 9px 18px;
+    border-radius: 7px;
+    border: none;
+    background: var(--blue);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .new-btn:hover { background: var(--blue-d); }
+
+  .results-body {
+    flex: 1;
+    padding: 32px 40px;
+    overflow-y: auto;
+  }
+  .results-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    margin-bottom: 40px;
+    align-items: start;
+  }
+  .tally-table {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg2);
+  }
+  .tally-table table { width: 100%; border-collapse: collapse; }
+  .tally-table th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+  .tally-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--bg3);
+    font-size: 13px;
+  }
+  .tally-table tr:last-child td { border-bottom: none; }
+  .tally-table .total-row td { font-weight: 700; color: var(--text); }
+
+  .section-h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-breakdown {
+    margin-bottom: 36px;
+  }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  .data-table th {
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--bg3);
+    vertical-align: top;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table .req-cell { max-width: 340px; }
+  .data-table .notes-cell { max-width: 220px; color: var(--muted); font-style: italic; }
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .status-chip.compliant { background: var(--green-bg); color: var(--green); }
+  .status-chip.partial   { background: var(--amber-bg); color: var(--amber); }
+  .status-chip.gap       { background: var(--red-bg);   color: var(--red); }
+  .status-chip.skip      { background: var(--gray-bg);  color: var(--gray); }
+  .section-row-compliant td { color: var(--green); }
+  .empty-state {
+    color: var(--muted);
+    font-style: italic;
+    padding: 12px 14px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 13px;
+  }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+  /* Keyboard hint */
+  .kbd-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .kbd {
+    display: inline-block;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-family: monospace;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SCREEN 1: SETUP
+══════════════════════════════════════════════════════════════════════════ -->
+<div id="setup-screen" class="screen active">
+  <div class="setup-card">
+    <h1>EU AI Act Art. 14</h1>
+    <div class="subtitle">Human Oversight Compliance Assessment — Interactive Dashboard</div>
+
+    <div class="form-group">
+      <label>System Name</label>
+      <input type="text" id="system-name" placeholder="e.g. Automated Credit Scoring System v2.1" />
+    </div>
+
+    <div class="form-group">
+      <label>Operator / Assessor Name</label>
+      <input type="text" id="operator-name" placeholder="e.g. Jane Smith, AI Compliance Lead" />
+    </div>
+
+    <div class="form-group">
+      <label>Role(s) — select all that apply</label>
+      <div class="role-group">
+        <div class="role-btn" id="role-provider" onclick="toggleRole('provider')">Provider</div>
+        <div class="role-btn" id="role-deployer" onclick="toggleRole('deployer')">Deployer</div>
+        <div class="role-btn" id="role-both" onclick="toggleRole('both')">Both</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Annex III Sector(s) — select all that apply</label>
+      <div class="sectors-grid" id="sectors-grid"></div>
+      <div class="biometric-note" id="biometric-note" style="display:none">
+        &#9888; Sector 1 (Biometrics) selected — Section C checks (Art. 14(5)) will be included.
+      </div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startAssessment()" disabled>
+      Start Assessment
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SCREEN 2: ASSESSMENT
+══════════════════════════════════════════════════════════════════════════ -->
+<div id="assess-screen" class="screen">
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="top-bar-title">
+      <span id="tb-system-name">System</span> &mdash; Art. 14 Assessment
+    </div>
+    <div class="progress-track">
+      <div class="progress-label" id="progress-label">0 of 0 answered</div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="top-bar-spacer"></div>
+    <div class="score-area">
+      <svg id="donut-svg" width="56" height="56" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="none" stroke="#334155" stroke-width="9"/>
+        <circle id="donut-compliant" cx="28" cy="28" r="22" fill="none" stroke="#22c55e" stroke-width="9"
+          stroke-dasharray="0 138.23" stroke-dashoffset="34.56" stroke-linecap="butt" transform="rotate(-90 28 28)"/>
+        <circle id="donut-partial" cx="28" cy="28" r="22" fill="none" stroke="#f59e0b" stroke-width="9"
+          stroke-dasharray="0 138.23" stroke-dashoffset="34.56" stroke-linecap="butt" transform="rotate(-90 28 28)"/>
+        <circle id="donut-gap" cx="28" cy="28" r="22" fill="none" stroke="#ef4444" stroke-width="9"
+          stroke-dasharray="0 138.23" stroke-dashoffset="34.56" stroke-linecap="butt" transform="rotate(-90 28 28)"/>
+        <circle id="donut-skip" cx="28" cy="28" r="22" fill="none" stroke="#6b7280" stroke-width="9"
+          stroke-dasharray="0 138.23" stroke-dashoffset="34.56" stroke-linecap="butt" transform="rotate(-90 28 28)"/>
+      </svg>
+      <div class="score-pills">
+        <div class="score-pill"><div class="pill-dot compliant"></div><span class="count" id="cnt-compliant">0</span><span class="label">compliant</span></div>
+        <div class="score-pill"><div class="pill-dot partial"></div><span class="count" id="cnt-partial">0</span><span class="label">partial</span></div>
+        <div class="score-pill"><div class="pill-dot gap"></div><span class="count" id="cnt-gap">0</span><span class="label">gap</span></div>
+        <div class="score-pill"><div class="pill-dot skip"></div><span class="count" id="cnt-skip">0</span><span class="label">skipped</span></div>
+      </div>
+      <div class="score-pct" id="score-pct">—</div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="assess-body">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-label">Sections</div>
+      <div id="section-nav"></div>
+    </div>
+
+    <!-- Main check panel -->
+    <div class="main-panel">
+      <div class="check-meta">
+        <div class="check-id" id="check-id">—</div>
+        <div class="article-badge" id="check-article">—</div>
+        <div class="section-tag" id="check-section-tag">—</div>
+        <div class="biometric-tag" id="check-biometric-tag" style="display:none">Biometric Only</div>
+      </div>
+
+      <div class="check-title" id="check-title">—</div>
+      <div class="check-requirement" id="check-requirement">—</div>
+
+      <details class="evidence-details" id="evidence-details">
+        <summary>Evidence Hints</summary>
+        <div class="evidence-body" id="evidence-body">—</div>
+      </details>
+
+      <div class="kbd-hint">
+        Keyboard: <span class="kbd">C</span> Compliant &nbsp;
+        <span class="kbd">P</span> Partial &nbsp;
+        <span class="kbd">G</span> Gap &nbsp;
+        <span class="kbd">S</span> Skip &nbsp;
+        <span class="kbd">←</span><span class="kbd">→</span> Navigate
+      </div>
+
+      <div class="answer-grid">
+        <button class="answer-btn" id="btn-compliant" onclick="setAnswer('compliant')">
+          <span class="btn-icon">&#10003;</span>
+          <span>Compliant</span>
+          <span class="btn-key">C</span>
+        </button>
+        <button class="answer-btn" id="btn-partial" onclick="setAnswer('partial')">
+          <span class="btn-icon">&#126;</span>
+          <span>Partial</span>
+          <span class="btn-key">P</span>
+        </button>
+        <button class="answer-btn" id="btn-gap" onclick="setAnswer('gap')">
+          <span class="btn-icon">&#10007;</span>
+          <span>Gap</span>
+          <span class="btn-key">G</span>
+        </button>
+        <button class="answer-btn" id="btn-skip" onclick="setAnswer('skip')">
+          <span class="btn-icon">&mdash;</span>
+          <span>Skip</span>
+          <span class="btn-key">S</span>
+        </button>
+      </div>
+
+      <div class="notes-area" id="notes-area">
+        <label>Notes / Evidence Reference</label>
+        <textarea id="notes-input" placeholder="Describe the gap, partial implementation, or link to evidence..." oninput="saveNote()"></textarea>
+      </div>
+
+      <div class="nav-row">
+        <button class="nav-btn" id="prev-btn" onclick="navigate(-1)" disabled>&#8592; Prev</button>
+        <span class="check-counter" id="check-counter">1 / 1</span>
+        <div class="nav-spacer"></div>
+        <button class="nav-btn primary" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+        <button class="finish-btn" id="finish-btn" onclick="showResults()">View Results &#10003;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SCREEN 3: RESULTS
+══════════════════════════════════════════════════════════════════════════ -->
+<div id="results-screen" class="screen">
+  <div class="results-header">
+    <div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Assessment Complete</div>
+      <h1 id="results-system-name">—</h1>
+    </div>
+    <div class="overall-badge" id="overall-badge">—</div>
+    <div class="results-actions">
+      <button class="export-btn" onclick="exportMarkdown()">Export Markdown Report</button>
+      <button class="export-btn" onclick="exportJSON()">Export JSON</button>
+      <button class="new-btn" onclick="resetAll()">Start New Assessment</button>
+    </div>
+  </div>
+  <div class="results-body" id="results-body"></div>
+</div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════════════════════
+
+const ANNEX_III_SECTORS = [
+  "1. Biometrics",
+  "2. Critical infrastructure",
+  "3. Education and vocational training",
+  "4. Employment, workers management, and access to self-employment",
+  "5. Access to and enjoyment of essential private services and public services and benefits",
+  "6. Law enforcement",
+  "7. Migration, asylum, and border control management",
+  "8. Administration of justice and democratic processes",
+];
+
+const SECTION_TITLES = {
+  A: "Section A — Provider Obligations (Art. 14(1), 14(3), 14(4))",
+  B: "Section B — Deployer Obligations (Art. 14(3)(b), Art. 26(2))",
+  C: "Section C — Biometric Identification (Art. 14(5))",
+  D: "Section D — Documentation and Conformity",
+  E: "Section E — Cross-Cutting Obligations",
+};
+
+const SUBSECTION_TITLES = {
+  A1:  "A1 — Human-Machine Interface (Art. 14(1))",
+  A2:  "A2 — Pre-Market Oversight Measures Identification (Art. 14(3))",
+  A3a: "A3a — Understand Capabilities and Limitations (Art. 14(4)(a))",
+  A3b: "A3b — Counter Automation Bias (Art. 14(4)(b))",
+  A3c: "A3c — Interpret Outputs (Art. 14(4)(c))",
+  A3d: "A3d — Override / Disregard Output (Art. 14(4)(d))",
+  A3e: "A3e — Stop / Interrupt the System (Art. 14(4)(e))",
+  B1:  "B1 — Implementation of Provider-Assigned Measures (Art. 14(3)(b))",
+  B2:  "B2 — Assignment of Qualified Oversight Personnel (Art. 26(2))",
+  B3:  "B3 — Operational Monitoring and Review",
+  C:   "C — Biometric Identification (Art. 14(5))",
+  D:   "D — Documentation and Conformity",
+  E:   "E — Cross-Cutting Obligations",
+};
+
+const ALL_CHECKS = [
+  // A1
+  { id:"A1.1", section:"A", subsection:"A1", title:"Human-Machine Interface",
+    requirement:"The system includes human-machine interface (HMI) tools that allow a natural person to observe system behaviour in real time.",
+    article:"Art. 14(1)",
+    evidence:"HMI design specification, screenshot/demo of oversight interface, section in instructions of use referencing oversight tooling.",
+    roles:["provider"], biometric_only:false },
+  { id:"A1.2", section:"A", subsection:"A1", title:"Human-Machine Interface",
+    requirement:"The HMI presents outputs in a form that is interpretable without specialist ML knowledge.",
+    article:"Art. 14(1)",
+    evidence:"HMI design specification, screenshot/demo of oversight interface, section in instructions of use referencing oversight tooling.",
+    roles:["provider"], biometric_only:false },
+  { id:"A1.3", section:"A", subsection:"A1", title:"Human-Machine Interface",
+    requirement:"The HMI is documented in the instructions of use (Art. 13) delivered to deployers.",
+    article:"Art. 14(1)",
+    evidence:"HMI design specification, screenshot/demo of oversight interface, section in instructions of use referencing oversight tooling.",
+    roles:["provider"], biometric_only:false },
+  // A2
+  { id:"A2.1", section:"A", subsection:"A2", title:"Pre-Market Oversight Measures Identification",
+    requirement:"Oversight measures were formally identified and documented before the system was placed on the market or put into service.",
+    article:"Art. 14(3)",
+    evidence:"Oversight measures register, pre-market risk assessment, instructions of use (deployer section).",
+    roles:["provider"], biometric_only:false },
+  { id:"A2.2", section:"A", subsection:"A2", title:"Pre-Market Oversight Measures Identification",
+    requirement:"For each identified measure: it has been assessed whether it can be embedded technically (Art. 14(3)(a)) or must be implemented by the deployer (Art. 14(3)(b)).",
+    article:"Art. 14(3)",
+    evidence:"Oversight measures register, pre-market risk assessment, instructions of use (deployer section).",
+    roles:["provider"], biometric_only:false },
+  { id:"A2.3", section:"A", subsection:"A2", title:"Pre-Market Oversight Measures Identification",
+    requirement:"All deployer-assigned measures are described explicitly in the instructions of use.",
+    article:"Art. 14(3)",
+    evidence:"Oversight measures register, pre-market risk assessment, instructions of use (deployer section).",
+    roles:["provider"], biometric_only:false },
+  { id:"A2.4", section:"A", subsection:"A2", title:"Pre-Market Oversight Measures Identification",
+    requirement:"The proportionality of measures to the system's risk level, autonomy level, and deployment context is documented.",
+    article:"Art. 14(3)",
+    evidence:"Oversight measures register, pre-market risk assessment, instructions of use (deployer section).",
+    roles:["provider"], biometric_only:false },
+  // A3a
+  { id:"A3a.1", section:"A", subsection:"A3a", title:"Understand Capabilities and Limitations",
+    requirement:"The system surfaces its own confidence scores, uncertainty estimates, or reliability indicators to oversight personnel.",
+    article:"Art. 14(4)(a)",
+    evidence:"Confidence/uncertainty display in UI, system logs, anomaly alert configuration, limitations documentation.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3a.2", section:"A", subsection:"A3a", title:"Understand Capabilities and Limitations",
+    requirement:"Known limitations (accuracy bounds, out-of-distribution behaviour, failure modes) are documented and accessible to oversight personnel during operation.",
+    article:"Art. 14(4)(a)",
+    evidence:"Confidence/uncertainty display in UI, system logs, anomaly alert configuration, limitations documentation.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3a.3", section:"A", subsection:"A3a", title:"Understand Capabilities and Limitations",
+    requirement:"The system generates alerts or flags when it detects anomalous inputs, unexpected outputs, or performance degradation.",
+    article:"Art. 14(4)(a)",
+    evidence:"Confidence/uncertainty display in UI, system logs, anomaly alert configuration, limitations documentation.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3a.4", section:"A", subsection:"A3a", title:"Understand Capabilities and Limitations",
+    requirement:"Logs of system decisions and outputs are retained in a form that oversight personnel can audit (see also Art. 12).",
+    article:"Art. 14(4)(a)",
+    evidence:"Confidence/uncertainty display in UI, system logs, anomaly alert configuration, limitations documentation.",
+    roles:["provider"], biometric_only:false },
+  // A3b
+  { id:"A3b.1", section:"A", subsection:"A3b", title:"Counter Automation Bias",
+    requirement:"The system does not present AI output as a final decision — outputs are labelled as recommendations, suggestions, or AI-generated assessments.",
+    article:"Art. 14(4)(b)",
+    evidence:"UI screenshots showing output labelling, confirmation-step design, instructions of use section on automation bias.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3b.2", section:"A", subsection:"A3b", title:"Counter Automation Bias",
+    requirement:"The interface does not pre-populate or auto-commit actions based on AI output without explicit human confirmation.",
+    article:"Art. 14(4)(b)",
+    evidence:"UI screenshots showing output labelling, confirmation-step design, instructions of use section on automation bias.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3b.3", section:"A", subsection:"A3b", title:"Counter Automation Bias",
+    requirement:"Instructions of use explicitly warn oversight personnel of automation bias risk and its implications.",
+    article:"Art. 14(4)(b)",
+    evidence:"UI screenshots showing output labelling, confirmation-step design, instructions of use section on automation bias.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3b.4", section:"A", subsection:"A3b", title:"Counter Automation Bias",
+    requirement:"Training materials for oversight personnel include automation bias awareness.",
+    article:"Art. 14(4)(b)",
+    evidence:"UI screenshots showing output labelling, confirmation-step design, instructions of use section on automation bias.",
+    roles:["provider"], biometric_only:false },
+  // A3c
+  { id:"A3c.1", section:"A", subsection:"A3c", title:"Interpret Outputs",
+    requirement:"The system provides explanation or rationale for its outputs (e.g., feature attribution, decision factors, natural language justification).",
+    article:"Art. 14(4)(c)",
+    evidence:"Explainability feature documentation, UI walkthrough, output format specification.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3c.2", section:"A", subsection:"A3c", title:"Interpret Outputs",
+    requirement:"Interpretation tools are accessible within the operational interface — not only in separate technical documentation.",
+    article:"Art. 14(4)(c)",
+    evidence:"Explainability feature documentation, UI walkthrough, output format specification.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3c.3", section:"A", subsection:"A3c", title:"Interpret Outputs",
+    requirement:"Output formats use language and scales appropriate to the oversight personnel's domain (not raw model scores only).",
+    article:"Art. 14(4)(c)",
+    evidence:"Explainability feature documentation, UI walkthrough, output format specification.",
+    roles:["provider"], biometric_only:false },
+  // A3d
+  { id:"A3d.1", section:"A", subsection:"A3d", title:"Override / Disregard Output",
+    requirement:"Oversight personnel can reject, disregard, or reverse any AI output before it takes effect — without requiring technical access or administrator privileges.",
+    article:"Art. 14(4)(d)",
+    evidence:"Override workflow documentation, override log schema, UI demonstration.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3d.2", section:"A", subsection:"A3d", title:"Override / Disregard Output",
+    requirement:"The override mechanism is prominent and accessible within the standard operational workflow.",
+    article:"Art. 14(4)(d)",
+    evidence:"Override workflow documentation, override log schema, UI demonstration.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3d.3", section:"A", subsection:"A3d", title:"Override / Disregard Output",
+    requirement:"Overrides are logged (who overrode, when, and if captured, the reason).",
+    article:"Art. 14(4)(d)",
+    evidence:"Override workflow documentation, override log schema, UI demonstration.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3d.4", section:"A", subsection:"A3d", title:"Override / Disregard Output",
+    requirement:"Overriding the AI output does not automatically trigger a re-run or escalation that bypasses the override.",
+    article:"Art. 14(4)(d)",
+    evidence:"Override workflow documentation, override log schema, UI demonstration.",
+    roles:["provider"], biometric_only:false },
+  // A3e
+  { id:"A3e.1", section:"A", subsection:"A3e", title:"Stop / Interrupt the System",
+    requirement:"A clearly labelled stop or interrupt mechanism exists within the operational interface.",
+    article:"Art. 14(4)(e)",
+    evidence:"Stop-button UI specification, test records, instructions of use section on interruption.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3e.2", section:"A", subsection:"A3e", title:"Stop / Interrupt the System",
+    requirement:"The stop function halts the system's active processing — it does not only pause new inputs while ongoing decisions complete.",
+    article:"Art. 14(4)(e)",
+    evidence:"Stop-button UI specification, test records, instructions of use section on interruption.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3e.3", section:"A", subsection:"A3e", title:"Stop / Interrupt the System",
+    requirement:"Activating the stop function does not require escalation to a third party or vendor support.",
+    article:"Art. 14(4)(e)",
+    evidence:"Stop-button UI specification, test records, instructions of use section on interruption.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3e.4", section:"A", subsection:"A3e", title:"Stop / Interrupt the System",
+    requirement:"The stop procedure and its effects are documented in the instructions of use.",
+    article:"Art. 14(4)(e)",
+    evidence:"Stop-button UI specification, test records, instructions of use section on interruption.",
+    roles:["provider"], biometric_only:false },
+  { id:"A3e.5", section:"A", subsection:"A3e", title:"Stop / Interrupt the System",
+    requirement:"The stop function has been tested and its behaviour verified under realistic load conditions.",
+    article:"Art. 14(4)(e)",
+    evidence:"Stop-button UI specification, test records, instructions of use section on interruption.",
+    roles:["provider"], biometric_only:false },
+  // B1
+  { id:"B1.1", section:"B", subsection:"B1", title:"Implementation of Provider-Assigned Measures",
+    requirement:"You have received and reviewed the provider's instructions of use, specifically the oversight measures section.",
+    article:"Art. 14(3)(b)",
+    evidence:"Signed receipt of instructions of use, implementation register, any gap notifications to provider.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B1.2", section:"B", subsection:"B1", title:"Implementation of Provider-Assigned Measures",
+    requirement:"All deployer-assigned oversight measures listed by the provider have been operationally implemented.",
+    article:"Art. 14(3)(b)",
+    evidence:"Signed receipt of instructions of use, implementation register, any gap notifications to provider.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B1.3", section:"B", subsection:"B1", title:"Implementation of Provider-Assigned Measures",
+    requirement:"You have documented which measures are implemented, how, and by whom.",
+    article:"Art. 14(3)(b)",
+    evidence:"Signed receipt of instructions of use, implementation register, any gap notifications to provider.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B1.4", section:"B", subsection:"B1", title:"Implementation of Provider-Assigned Measures",
+    requirement:"You have identified any provider-assigned measure you cannot implement, and have notified the provider and/or your national market surveillance authority as appropriate.",
+    article:"Art. 14(3)(b)",
+    evidence:"Signed receipt of instructions of use, implementation register, any gap notifications to provider.",
+    roles:["deployer"], biometric_only:false },
+  // B2
+  { id:"B2.1", section:"B", subsection:"B2", title:"Assignment of Qualified Oversight Personnel",
+    requirement:"Natural persons have been formally assigned to human oversight of this system.",
+    article:"Art. 26(2)",
+    evidence:"Oversight personnel assignment records, training completion certificates, competence assessments, authority delegation documents.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B2.2", section:"B", subsection:"B2", title:"Assignment of Qualified Oversight Personnel",
+    requirement:"Assigned personnel have documented competence relevant to the system's domain and outputs.",
+    article:"Art. 26(2)",
+    evidence:"Oversight personnel assignment records, training completion certificates, competence assessments, authority delegation documents.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B2.3", section:"B", subsection:"B2", title:"Assignment of Qualified Oversight Personnel",
+    requirement:"Assigned personnel have received training on the system's capabilities, limitations, and the five Art. 14(4) competencies.",
+    article:"Art. 26(2)",
+    evidence:"Oversight personnel assignment records, training completion certificates, competence assessments, authority delegation documents.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B2.4", section:"B", subsection:"B2", title:"Assignment of Qualified Oversight Personnel",
+    requirement:"Assigned personnel have the organisational authority to exercise override (Art. 14(4)(d)) and stop (Art. 14(4)(e)) without requiring approval from a superior.",
+    article:"Art. 26(2)",
+    evidence:"Oversight personnel assignment records, training completion certificates, competence assessments, authority delegation documents.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B2.5", section:"B", subsection:"B2", title:"Assignment of Qualified Oversight Personnel",
+    requirement:"A named backup or coverage procedure exists for when primary oversight personnel are unavailable.",
+    article:"Art. 26(2)",
+    evidence:"Oversight personnel assignment records, training completion certificates, competence assessments, authority delegation documents.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B2.6", section:"B", subsection:"B2", title:"Assignment of Qualified Oversight Personnel",
+    requirement:"Training records and competence assessments are retained and refreshed on a defined schedule.",
+    article:"Art. 26(2)",
+    evidence:"Oversight personnel assignment records, training completion certificates, competence assessments, authority delegation documents.",
+    roles:["deployer"], biometric_only:false },
+  // B3
+  { id:"B3.1", section:"B", subsection:"B3", title:"Operational Monitoring and Review",
+    requirement:"A process exists for oversight personnel to report anomalies, unexpected outputs, or performance concerns.",
+    article:"Art. 26(2)",
+    evidence:"Anomaly reporting procedure, review meeting records, performance monitoring logs, change management records.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B3.2", section:"B", subsection:"B3", title:"Operational Monitoring and Review",
+    requirement:"Anomaly reports are reviewed on a defined cadence by a responsible person with authority to escalate or halt the system.",
+    article:"Art. 26(2)",
+    evidence:"Anomaly reporting procedure, review meeting records, performance monitoring logs, change management records.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B3.3", section:"B", subsection:"B3", title:"Operational Monitoring and Review",
+    requirement:"The system's performance against its stated accuracy and reliability specifications is reviewed at defined intervals.",
+    article:"Art. 26(2)",
+    evidence:"Anomaly reporting procedure, review meeting records, performance monitoring logs, change management records.",
+    roles:["deployer"], biometric_only:false },
+  { id:"B3.4", section:"B", subsection:"B3", title:"Operational Monitoring and Review",
+    requirement:"If the system is updated or retrained, oversight measures are re-evaluated before the updated system is re-deployed.",
+    article:"Art. 26(2)",
+    evidence:"Anomaly reporting procedure, review meeting records, performance monitoring logs, change management records.",
+    roles:["deployer"], biometric_only:false },
+  // C
+  { id:"C1", section:"C", subsection:"C", title:"Biometric Identification — Dual Verification",
+    requirement:"No action or decision based on a remote biometric identification result is taken until that result has been separately verified by a second natural person.",
+    article:"Art. 14(5)",
+    evidence:"Dual-verification workflow, verification logs, competence records for both roles, legal basis documentation if exception claimed.",
+    roles:["provider","deployer"], biometric_only:true },
+  { id:"C2", section:"C", subsection:"C", title:"Biometric Identification — Verifier Competence",
+    requirement:"Both verifying persons have documented competence, training, and authority relevant to the biometric identification context.",
+    article:"Art. 14(5)",
+    evidence:"Dual-verification workflow, verification logs, competence records for both roles, legal basis documentation if exception claimed.",
+    roles:["provider","deployer"], biometric_only:true },
+  { id:"C3", section:"C", subsection:"C", title:"Biometric Identification — Process Enforcement",
+    requirement:"The two-person verification step is enforced by process or system design — it cannot be bypassed by a single operator.",
+    article:"Art. 14(5)",
+    evidence:"Dual-verification workflow, verification logs, competence records for both roles, legal basis documentation if exception claimed.",
+    roles:["provider","deployer"], biometric_only:true },
+  { id:"C4", section:"C", subsection:"C", title:"Biometric Identification — Verification Records",
+    requirement:"Records of dual-person verifications are retained, including the identity of both verifying persons and the outcome.",
+    article:"Art. 14(5)",
+    evidence:"Dual-verification workflow, verification logs, competence records for both roles, legal basis documentation if exception claimed.",
+    roles:["provider","deployer"], biometric_only:true },
+  { id:"C5", section:"C", subsection:"C", title:"Biometric Identification — Exception Documentation",
+    requirement:"If you are relying on the law-enforcement disproportionality exception: the legal basis (Union or national law provision) is documented and reviewed by legal counsel.",
+    article:"Art. 14(5)",
+    evidence:"Dual-verification workflow, verification logs, competence records for both roles, legal basis documentation if exception claimed.",
+    roles:["provider","deployer"], biometric_only:true },
+  // D
+  { id:"D1", section:"D", subsection:"D", title:"Documentation and Conformity",
+    requirement:"Technical documentation (Art. 11 / Annex IV) includes a dedicated section on human oversight measures and how Art. 14(1), (3), and (4) requirements are met.",
+    article:"Art. 11 / Annex IV",
+    evidence:"Technical documentation, EU AI database registration confirmation, notified body assessment certificate (if applicable), self-assessment records.",
+    roles:["provider","deployer"], biometric_only:false },
+  { id:"D2", section:"D", subsection:"D", title:"Documentation and Conformity",
+    requirement:"The system is registered in the EU AI Act database (Art. 49) if required for your Annex III category.",
+    article:"Art. 49",
+    evidence:"Technical documentation, EU AI database registration confirmation, notified body assessment certificate (if applicable), self-assessment records.",
+    roles:["provider","deployer"], biometric_only:false },
+  { id:"D3", section:"D", subsection:"D", title:"Documentation and Conformity",
+    requirement:"If a third-party notified body assessment is required (biometrics and certain Annex III categories): it has been commissioned or completed.",
+    article:"Art. 43",
+    evidence:"Technical documentation, EU AI database registration confirmation, notified body assessment certificate (if applicable), self-assessment records.",
+    roles:["provider","deployer"], biometric_only:false },
+  { id:"D4", section:"D", subsection:"D", title:"Documentation and Conformity",
+    requirement:"Internal self-assessment records against Arts. 9-15 are retained and available for market surveillance authority inspection.",
+    article:"Arts. 9-15",
+    evidence:"Technical documentation, EU AI database registration confirmation, notified body assessment certificate (if applicable), self-assessment records.",
+    roles:["provider","deployer"], biometric_only:false },
+  { id:"D5", section:"D", subsection:"D", title:"Documentation and Conformity",
+    requirement:"A process exists to update documentation when the system or its deployment context changes materially.",
+    article:"Art. 11",
+    evidence:"Technical documentation, EU AI database registration confirmation, notified body assessment certificate (if applicable), self-assessment records.",
+    roles:["provider","deployer"], biometric_only:false },
+  // E
+  { id:"E1", section:"E", subsection:"E", title:"Cross-Cutting Obligations",
+    requirement:"A risk management system is in place and documents residual risks that human oversight is relied upon to address.",
+    article:"Art. 9",
+    evidence:"Risk management system documentation.",
+    roles:["provider","deployer"], biometric_only:false },
+  { id:"E2", section:"E", subsection:"E", title:"Cross-Cutting Obligations",
+    requirement:"The system generates automatic logs of its operation sufficient for post-hoc review of decisions.",
+    article:"Art. 12",
+    evidence:"Log configuration, sample log output.",
+    roles:["provider","deployer"], biometric_only:false },
+  { id:"E3", section:"E", subsection:"E", title:"Cross-Cutting Obligations",
+    requirement:"Logs are retained for the period required by applicable law and are protected against tampering.",
+    article:"Art. 12",
+    evidence:"Retention policy, tamper-evidence mechanism.",
+    roles:["provider","deployer"], biometric_only:false },
+  { id:"E4", section:"E", subsection:"E", title:"Cross-Cutting Obligations",
+    requirement:"Instructions of use have been provided to deployers and cover: system purpose, performance characteristics, oversight measures, and risks.",
+    article:"Art. 13",
+    evidence:"Instructions of use document.",
+    roles:["provider","deployer"], biometric_only:false },
+  { id:"E5", section:"E", subsection:"E", title:"Cross-Cutting Obligations",
+    requirement:"Instructions of use identify categories of persons or contexts for which the system is not suitable.",
+    article:"Art. 13",
+    evidence:"Instructions of use — contraindications section.",
+    roles:["provider","deployer"], biometric_only:false },
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+
+let state = {
+  systemName: '',
+  operatorName: '',
+  roles: [],       // ['provider'], ['deployer'], or ['provider','deployer']
+  sectors: [],
+  hasBiometric: false,
+  checks: [],      // filtered applicable checks
+  answers: {},     // { checkId: 'compliant'|'partial'|'gap'|'skip' }
+  notes: {},       // { checkId: string }
+  currentIdx: 0,
+  timestamp: null,
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════════════════════════════════════
+
+(function initSetup() {
+  const grid = document.getElementById('sectors-grid');
+  ANNEX_III_SECTORS.forEach((sector, i) => {
+    const item = document.createElement('label');
+    item.className = 'sector-item';
+    item.innerHTML = `<input type="checkbox" value="${sector}" onchange="onSectorChange()"> <span>${sector}</span>`;
+    grid.appendChild(item);
+  });
+})();
+
+function toggleRole(r) {
+  const p = document.getElementById('role-provider');
+  const d = document.getElementById('role-deployer');
+  const b = document.getElementById('role-both');
+
+  p.classList.remove('selected');
+  d.classList.remove('selected');
+  b.classList.remove('selected');
+
+  if (r === 'provider') {
+    state.roles = ['provider'];
+    p.classList.add('selected');
+  } else if (r === 'deployer') {
+    state.roles = ['deployer'];
+    d.classList.add('selected');
+  } else {
+    state.roles = ['provider','deployer'];
+    b.classList.add('selected');
+  }
+  validateSetup();
+}
+
+function onSectorChange() {
+  const checked = Array.from(document.querySelectorAll('#sectors-grid input:checked')).map(c => c.value);
+  state.sectors = checked;
+  state.hasBiometric = checked.some(s => s.startsWith('1.'));
+  document.getElementById('biometric-note').style.display = state.hasBiometric ? 'block' : 'none';
+  validateSetup();
+}
+
+function validateSetup() {
+  const sysName = document.getElementById('system-name').value.trim();
+  const opName = document.getElementById('operator-name').value.trim();
+  const ok = sysName.length > 0 && opName.length > 0 && state.roles.length > 0;
+  document.getElementById('start-btn').disabled = !ok;
+}
+
+document.getElementById('system-name').addEventListener('input', validateSetup);
+document.getElementById('operator-name').addEventListener('input', validateSetup);
+
+function startAssessment() {
+  state.systemName = document.getElementById('system-name').value.trim();
+  state.operatorName = document.getElementById('operator-name').value.trim();
+  state.timestamp = new Date();
+  state.answers = {};
+  state.notes = {};
+  state.currentIdx = 0;
+
+  // Filter checks by role and biometric
+  state.checks = ALL_CHECKS.filter(c => {
+    // Role filter: check must have at least one role that matches
+    const roleMatch = c.roles.some(r => state.roles.includes(r));
+    if (!roleMatch) return false;
+    // Biometric filter
+    if (c.biometric_only && !state.hasBiometric) return false;
+    return true;
+  });
+
+  document.getElementById('tb-system-name').textContent = state.systemName;
+  buildSidebarNav();
+  renderCheck();
+  showScreen('assess-screen');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SIDEBAR NAV
+// ══════════════════════════════════════════════════════════════════════════════
+
+const SECTION_SHORT = {
+  A: "Provider Obligations",
+  B: "Deployer Obligations",
+  C: "Biometric ID",
+  D: "Documentation",
+  E: "Cross-Cutting",
+};
+
+function buildSidebarNav() {
+  const nav = document.getElementById('section-nav');
+  nav.innerHTML = '';
+  const sections = [...new Set(state.checks.map(c => c.section))];
+  sections.forEach(sec => {
+    const item = document.createElement('div');
+    item.className = 'section-nav-item';
+    item.id = `nav-sec-${sec}`;
+    item.onclick = () => jumpToSection(sec);
+    item.innerHTML = `
+      <div class="section-nav-header">
+        <div class="section-letter">${sec}</div>
+        <div class="section-nav-name">${SECTION_SHORT[sec] || sec}</div>
+      </div>
+      <div class="section-stats" id="nav-stats-${sec}"></div>
+      <div class="mini-progress" id="nav-mini-${sec}"></div>
+    `;
+    nav.appendChild(item);
+  });
+}
+
+function jumpToSection(sec) {
+  const idx = state.checks.findIndex(c => c.section === sec && !state.answers[c.id]);
+  if (idx >= 0) {
+    state.currentIdx = idx;
+  } else {
+    // All answered in section, jump to first of section
+    const first = state.checks.findIndex(c => c.section === sec);
+    if (first >= 0) state.currentIdx = first;
+  }
+  renderCheck();
+}
+
+function updateSidebarNav() {
+  const sections = [...new Set(state.checks.map(c => c.section))];
+  sections.forEach(sec => {
+    const secChecks = state.checks.filter(c => c.section === sec);
+    const counts = { compliant:0, partial:0, gap:0, skip:0, unanswered:0 };
+    secChecks.forEach(c => {
+      const a = state.answers[c.id];
+      if (!a) counts.unanswered++;
+      else counts[a === 'skip' ? 'skip' : a]++;
+    });
+    const total = secChecks.length;
+    const answered = total - counts.unanswered;
+    document.getElementById(`nav-stats-${sec}`).textContent =
+      `${answered}/${total} answered · ${counts.compliant} ✓ ${counts.gap} ✗`;
+
+    // Mini progress bar
+    const mini = document.getElementById(`nav-mini-${sec}`);
+    mini.innerHTML = '';
+    secChecks.forEach(c => {
+      const a = state.answers[c.id];
+      const cls = !a ? 'unanswered' : (a === 'skip' ? 'skip' : a);
+      const seg = document.createElement('div');
+      seg.className = `mini-seg ${cls}`;
+      mini.appendChild(seg);
+    });
+
+    // Active state
+    const curSec = state.checks[state.currentIdx]?.section;
+    document.getElementById(`nav-sec-${sec}`).classList.toggle('active', sec === curSec);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ASSESSMENT RENDERING
+// ══════════════════════════════════════════════════════════════════════════════
+
+function renderCheck() {
+  if (!state.checks.length) return;
+  const check = state.checks[state.currentIdx];
+  const totalChecks = state.checks.length;
+
+  document.getElementById('check-id').textContent = check.id;
+  document.getElementById('check-article').textContent = check.article;
+  document.getElementById('check-section-tag').textContent = SUBSECTION_TITLES[check.subsection] || check.subsection;
+  const bioTag = document.getElementById('check-biometric-tag');
+  bioTag.style.display = check.biometric_only ? 'inline-flex' : 'none';
+  document.getElementById('check-title').textContent = check.title;
+  document.getElementById('check-requirement').textContent = check.requirement;
+  document.getElementById('evidence-body').textContent = check.evidence;
+
+  // Close evidence by default when navigating
+  document.getElementById('evidence-details').removeAttribute('open');
+
+  // Answer buttons
+  const answer = state.answers[check.id] || null;
+  ['compliant','partial','gap','skip'].forEach(a => {
+    const btn = document.getElementById(`btn-${a}`);
+    btn.className = 'answer-btn';
+    if (answer === a) btn.classList.add(`selected-${a}`);
+  });
+
+  // Notes
+  const notesArea = document.getElementById('notes-area');
+  const notesInput = document.getElementById('notes-input');
+  if (answer === 'partial' || answer === 'gap') {
+    notesArea.classList.add('visible');
+    notesInput.value = state.notes[check.id] || '';
+  } else {
+    notesArea.classList.remove('visible');
+    notesInput.value = '';
+  }
+
+  // Navigation
+  document.getElementById('prev-btn').disabled = state.currentIdx === 0;
+  document.getElementById('next-btn').style.display = state.currentIdx < totalChecks - 1 ? 'inline-block' : 'none';
+
+  const allAnswered = state.checks.every(c => state.answers[c.id]);
+  const finishBtn = document.getElementById('finish-btn');
+  finishBtn.classList.toggle('visible', allAnswered);
+
+  document.getElementById('check-counter').textContent = `${state.currentIdx + 1} / ${totalChecks}`;
+
+  updateProgressBar();
+  updateTopBarScore();
+  updateSidebarNav();
+}
+
+function setAnswer(a) {
+  const check = state.checks[state.currentIdx];
+  state.answers[check.id] = a;
+  if (a !== 'partial' && a !== 'gap') {
+    delete state.notes[check.id];
+  }
+  renderCheck();
+}
+
+function saveNote() {
+  const check = state.checks[state.currentIdx];
+  state.notes[check.id] = document.getElementById('notes-input').value;
+}
+
+function navigate(dir) {
+  const next = state.currentIdx + dir;
+  if (next >= 0 && next < state.checks.length) {
+    state.currentIdx = next;
+    renderCheck();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TOP BAR SCORE + DONUT
+// ══════════════════════════════════════════════════════════════════════════════
+
+function updateProgressBar() {
+  const total = state.checks.length;
+  const answered = state.checks.filter(c => state.answers[c.id]).length;
+  document.getElementById('progress-label').textContent = `${answered} of ${total} answered`;
+  document.getElementById('progress-bar').style.width = total ? `${(answered/total)*100}%` : '0%';
+}
+
+function updateTopBarScore() {
+  const tally = { compliant:0, partial:0, gap:0, skip:0 };
+  state.checks.forEach(c => {
+    const a = state.answers[c.id];
+    if (a) tally[a === 'skip' ? 'skip' : a]++;
+  });
+
+  const nonSkipped = tally.compliant + tally.partial + tally.gap;
+  const pct = nonSkipped > 0 ? Math.round((tally.compliant / nonSkipped) * 100) : null;
+
+  document.getElementById('score-pct').textContent = pct !== null ? `${pct}%` : '—';
+  document.getElementById('cnt-compliant').textContent = tally.compliant;
+  document.getElementById('cnt-partial').textContent = tally.partial;
+  document.getElementById('cnt-gap').textContent = tally.gap;
+  document.getElementById('cnt-skip').textContent = tally.skip;
+
+  updateDonut(tally, nonSkipped + tally.skip);
+}
+
+function updateDonut(tally, total) {
+  const R = 22;
+  const CIRC = 2 * Math.PI * R; // ~138.23
+  const order = ['compliant','partial','gap','skip'];
+  const colors = { compliant:'#22c55e', partial:'#f59e0b', gap:'#ef4444', skip:'#6b7280' };
+
+  let offset = 0;
+  order.forEach(key => {
+    const el = document.getElementById(`donut-${key}`);
+    const frac = total > 0 ? tally[key] / total : 0;
+    const dash = frac * CIRC;
+    el.setAttribute('stroke-dasharray', `${dash} ${CIRC - dash}`);
+    el.setAttribute('stroke-dashoffset', -offset);
+    offset += dash;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════════════════════════════════════
+
+document.addEventListener('keydown', e => {
+  if (document.getElementById('assess-screen').classList.contains('active')) {
+    const tag = e.target.tagName.toLowerCase();
+    if (tag === 'textarea' || tag === 'input') return;
+    switch (e.key.toLowerCase()) {
+      case 'c': setAnswer('compliant'); break;
+      case 'p': setAnswer('partial'); break;
+      case 'g': setAnswer('gap'); break;
+      case 's': setAnswer('skip'); break;
+      case 'arrowleft': navigate(-1); break;
+      case 'arrowright': navigate(1); break;
+    }
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RESULTS SCREEN
+// ══════════════════════════════════════════════════════════════════════════════
+
+function showResults() {
+  // Build results list
+  const results = state.checks.map(c => ({
+    check: c,
+    status: state.answers[c.id] || 'skipped',
+    note: state.notes[c.id] || '',
+  }));
+
+  const tally = { compliant:0, partial:0, gap:0, skipped:0 };
+  results.forEach(r => tally[r.status]++);
+  const total = results.length;
+  const nonSkipped = total - tally.skipped;
+  const pct = nonSkipped > 0 ? Math.round((tally.compliant / nonSkipped) * 100) : 0;
+
+  let overallStatus, overallClass;
+  if (tally.gap === 0 && tally.partial === 0) {
+    overallStatus = 'Compliant'; overallClass = 'compliant';
+  } else if (tally.gap === 0) {
+    overallStatus = 'Conditionally Compliant'; overallClass = 'conditional';
+  } else {
+    overallStatus = 'Non-Compliant'; overallClass = 'non-compliant';
+  }
+
+  document.getElementById('results-system-name').textContent = state.systemName;
+  const badge = document.getElementById('overall-badge');
+  badge.textContent = overallStatus;
+  badge.className = `overall-badge ${overallClass}`;
+
+  const body = document.getElementById('results-body');
+  body.innerHTML = '';
+
+  // Summary grid
+  const summaryDiv = document.createElement('div');
+  summaryDiv.className = 'results-grid';
+  summaryDiv.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      ${buildResultsDonutSVG(tally, total)}
+      <div style="font-size:28px;font-weight:700;color:var(--blue)">${pct}%</div>
+      <div style="font-size:11px;color:var(--muted)">compliance rate<br>(excl. skipped)</div>
+    </div>
+    <div class="tally-table">
+      <table>
+        <thead><tr><th>Status</th><th>Count</th><th>%</th></tr></thead>
+        <tbody>
+          <tr><td><span class="status-chip compliant">&#10003; Compliant</span></td><td>${tally.compliant}</td><td>${pct}%</td></tr>
+          <tr><td><span class="status-chip partial">~ Partial</span></td><td>${tally.partial}</td><td>${nonSkipped ? Math.round(tally.partial/nonSkipped*100) : 0}%</td></tr>
+          <tr><td><span class="status-chip gap">&#10007; Gap</span></td><td>${tally.gap}</td><td>${nonSkipped ? Math.round(tally.gap/nonSkipped*100) : 0}%</td></tr>
+          <tr><td><span class="status-chip skip">&#8212; Skipped</span></td><td>${tally.skipped}</td><td>—</td></tr>
+          <tr class="total-row"><td><strong>Total assessed</strong></td><td><strong>${total}</strong></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+  body.appendChild(summaryDiv);
+
+  // Section breakdown
+  const secBreakDiv = document.createElement('div');
+  secBreakDiv.className = 'section-breakdown';
+  secBreakDiv.innerHTML = '<div class="section-h2">Section-by-Section Breakdown</div>';
+  const secTable = document.createElement('table');
+  secTable.className = 'data-table';
+  secTable.innerHTML = `<thead><tr><th>Section</th><th>Total</th><th>Compliant</th><th>Partial</th><th>Gap</th><th>Skipped</th><th>Rate</th></tr></thead>`;
+  const secTbody = document.createElement('tbody');
+  const sections = [...new Set(state.checks.map(c => c.section))];
+  sections.forEach(sec => {
+    const secResults = results.filter(r => r.check.section === sec);
+    const st = { compliant:0, partial:0, gap:0, skipped:0 };
+    secResults.forEach(r => st[r.status]++);
+    const ns = secResults.length - st.skipped;
+    const rate = ns > 0 ? Math.round(st.compliant/ns*100) : 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${sec}</strong> — ${SECTION_SHORT[sec]}</td>
+      <td>${secResults.length}</td>
+      <td style="color:var(--green)">${st.compliant}</td>
+      <td style="color:var(--amber)">${st.partial}</td>
+      <td style="color:var(--red)">${st.gap}</td>
+      <td style="color:var(--gray)">${st.skipped}</td>
+      <td style="color:${rate===100?'var(--green)':rate>=50?'var(--amber)':'var(--red)'};font-weight:600">${rate}%</td>
+    `;
+    secTbody.appendChild(tr);
+  });
+  secTable.appendChild(secTbody);
+  secBreakDiv.appendChild(secTable);
+  body.appendChild(secBreakDiv);
+
+  // Remediation table
+  const remDiv = document.createElement('div');
+  remDiv.className = 'section-breakdown';
+  remDiv.innerHTML = '<div class="section-h2">Remediation Log</div>';
+  const remediation = results.filter(r => r.status === 'gap' || r.status === 'partial');
+  if (remediation.length === 0) {
+    remDiv.innerHTML += '<div class="empty-state">No gaps or partial items — all answered checks are compliant.</div>';
+  } else {
+    const remTable = document.createElement('table');
+    remTable.className = 'data-table';
+    remTable.innerHTML = `<thead><tr><th>Check ID</th><th>Status</th><th>Article</th><th class="req-cell">Requirement</th><th class="notes-cell">Notes</th></tr></thead>`;
+    const remTbody = document.createElement('tbody');
+    remediation.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${r.check.id}</strong></td>
+        <td><span class="status-chip ${r.status}">${r.status === 'gap' ? '&#10007; Gap' : '~ Partial'}</span></td>
+        <td style="white-space:nowrap;color:var(--muted)">${r.check.article}</td>
+        <td class="req-cell">${r.check.requirement}</td>
+        <td class="notes-cell">${r.note || '<span style="color:var(--bg3)">—</span>'}</td>
+      `;
+      remTbody.appendChild(tr);
+    });
+    remTable.appendChild(remTbody);
+    remDiv.appendChild(remTable);
+  }
+  body.appendChild(remDiv);
+
+  // Evidence checklist (non-compliant only)
+  const nonComp = results.filter(r => r.status !== 'compliant');
+  if (nonComp.length > 0) {
+    const evDiv = document.createElement('div');
+    evDiv.className = 'section-breakdown';
+    evDiv.innerHTML = '<div class="section-h2">Evidence Checklist — Items Not Fully Compliant</div>';
+    const evTable = document.createElement('table');
+    evTable.className = 'data-table';
+    evTable.innerHTML = `<thead><tr><th>Check ID</th><th>Status</th><th class="req-cell">Evidence Required</th></tr></thead>`;
+    const evTbody = document.createElement('tbody');
+    nonComp.forEach(r => {
+      const tr = document.createElement('tr');
+      const statusLabel = r.status === 'partial' ? '~ Partial' : r.status === 'gap' ? '&#10007; Gap' : '&#8212; Skipped';
+      tr.innerHTML = `
+        <td><strong>${r.check.id}</strong></td>
+        <td><span class="status-chip ${r.status === 'skipped' ? 'skip' : r.status}">${statusLabel}</span></td>
+        <td class="req-cell" style="color:var(--muted)">${r.check.evidence}</td>
+      `;
+      evTbody.appendChild(tr);
+    });
+    evTable.appendChild(evTbody);
+    evDiv.appendChild(evTable);
+    body.appendChild(evDiv);
+  }
+
+  // Caveats
+  const cavDiv = document.createElement('div');
+  cavDiv.className = 'section-breakdown';
+  cavDiv.innerHTML = `
+    <div class="section-h2">Caveats</div>
+    <ol style="color:var(--muted);font-size:12px;line-height:1.7;padding-left:20px;">
+      <li>This checklist covers Art. 14 human oversight requirements only. Full EU AI Act compliance requires assessment of Arts. 9–15, 17, 26, and Annexes I–IV, among others.</li>
+      <li>This tool is not a substitute for legal advice. The EU AI Act is subject to ongoing regulatory guidance and Member State implementation.</li>
+      <li>Applicability of specific provisions (e.g., Art. 14(5) biometric requirements) depends on your system's classification and use case. Seek qualified legal and technical counsel.</li>
+      <li>'Compliant' answers are self-assessed declarations. They do not constitute a conformity assessment or notified body certification.</li>
+      <li>This report should be reviewed and updated whenever the system, its deployment context, or applicable regulations change materially.</li>
+    </ol>
+  `;
+  body.appendChild(cavDiv);
+
+  showScreen('results-screen');
+}
+
+function buildResultsDonutSVG(tally, total) {
+  const R = 60;
+  const CIRC = 2 * Math.PI * R;
+  const order = ['compliant','partial','gap','skipped'];
+  const colors = { compliant:'#22c55e', partial:'#f59e0b', gap:'#ef4444', skipped:'#6b7280' };
+  let offset = 0;
+  let segments = '';
+  order.forEach(key => {
+    const frac = total > 0 ? tally[key] / total : 0;
+    const dash = frac * CIRC;
+    segments += `<circle cx="70" cy="70" r="${R}" fill="none" stroke="${colors[key]}" stroke-width="20"
+      stroke-dasharray="${dash} ${CIRC - dash}" stroke-dashoffset="${-offset}"
+      transform="rotate(-90 70 70)"/>`;
+    offset += dash;
+  });
+  return `<svg width="140" height="140" viewBox="0 0 140 140">
+    <circle cx="70" cy="70" r="${R}" fill="none" stroke="#334155" stroke-width="20"/>
+    ${segments}
+  </svg>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EXPORTS
+// ══════════════════════════════════════════════════════════════════════════════
+
+function mdEscape(text) {
+  return String(text).replace(/\|/g, '\\|');
+}
+
+function exportMarkdown() {
+  const results = state.checks.map(c => ({
+    check: c,
+    status: state.answers[c.id] || 'skipped',
+    note: state.notes[c.id] || '',
+  }));
+
+  const tally = { compliant:0, partial:0, gap:0, skipped:0 };
+  results.forEach(r => tally[r.status]++);
+  const total = results.length;
+
+  const STATUS_SYM = { compliant:'✓', partial:'~', gap:'✗', skipped:'-' };
+  const STATUS_LABEL = { compliant:'Compliant', partial:'Partial', gap:'Gap', skipped:'Skipped' };
+
+  const ts = state.timestamp;
+  const tsStr = ts.toISOString().replace('T',' ').replace(/\.\d+Z$/,' UTC');
+  const roleDisplay = state.roles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(' / ');
+  const sectorDisplay = state.sectors.length ? state.sectors.join(', ') : 'None selected';
+
+  const lines = [];
+
+  lines.push('# EU AI Act Article 14 — Human Oversight Compliance Report', '');
+  lines.push('| Field | Value |');
+  lines.push('|-------|-------|');
+  lines.push(`| System name | ${mdEscape(state.systemName)} |`);
+  lines.push(`| Operator | ${mdEscape(state.operatorName)} |`);
+  lines.push(`| Assessment date | ${tsStr} |`);
+  lines.push(`| Role(s) assessed | ${roleDisplay} |`);
+  lines.push(`| Annex III sector(s) | ${mdEscape(sectorDisplay)} |`);
+  lines.push('');
+
+  lines.push('## Applicability Gate', '');
+  lines.push('| Question | Answer |');
+  lines.push('|----------|--------|');
+  lines.push('| Is this system listed in Annex III of the EU AI Act? | Yes |');
+  lines.push('| Is it used in the EU or affects persons in the EU? | Yes |');
+  lines.push('| Is it classified as high-risk under Art. 6? | Yes |');
+  lines.push('');
+
+  // Per-section tables
+  const sectionOrder = ['A','B','C','D','E'];
+  sectionOrder.forEach(sec => {
+    const secResults = results.filter(r => r.check.section === sec);
+    if (!secResults.length) return;
+
+    lines.push(`## ${SECTION_TITLES[sec]}`, '');
+
+    const subsections = [];
+    secResults.forEach(r => {
+      if (!subsections.includes(r.check.subsection)) subsections.push(r.check.subsection);
+    });
+
+    subsections.forEach(sub => {
+      const subTitle = SUBSECTION_TITLES[sub] || sub;
+      if (sub !== sec) {
+        lines.push(`### ${subTitle}`, '');
+      }
+      lines.push('| Check ID | Requirement | Article | Status | Notes |');
+      lines.push('|----------|-------------|---------|--------|-------|');
+      secResults.filter(r => r.check.subsection === sub).forEach(r => {
+        const sym = STATUS_SYM[r.status];
+        lines.push(`| ${r.check.id} | ${mdEscape(r.check.requirement)} | ${r.check.article} | ${sym} | ${mdEscape(r.note)} |`);
+      });
+      lines.push('');
+    });
+  });
+
+  // Tally
+  lines.push('## Tally', '');
+  lines.push('| Status | Count |');
+  lines.push('|--------|-------|');
+  lines.push(`| ✓ Compliant | ${tally.compliant} |`);
+  lines.push(`| ~ Partial | ${tally.partial} |`);
+  lines.push(`| ✗ Gap | ${tally.gap} |`);
+  lines.push(`| - Skipped | ${tally.skipped} |`);
+  lines.push(`| **Total assessed** | **${total}** |`);
+  lines.push('');
+
+  // Overall
+  let overall;
+  if (tally.gap === 0 && tally.partial === 0) overall = '**Compliant**';
+  else if (tally.gap === 0) overall = '**Conditionally compliant**';
+  else overall = '**Non-compliant**';
+  lines.push('## Overall Compliance Status', '');
+  lines.push(`Overall assessment: ${overall}`, '');
+
+  // Remediation
+  const remediation = results.filter(r => r.status === 'gap' || r.status === 'partial');
+  if (remediation.length) {
+    lines.push('## Remediation Log', '');
+    lines.push('| Check ID | Status | Requirement | Notes |');
+    lines.push('|----------|--------|-------------|-------|');
+    remediation.forEach(r => {
+      lines.push(`| ${r.check.id} | ${STATUS_SYM[r.status]} | ${mdEscape(r.check.requirement)} | ${mdEscape(r.note)} |`);
+    });
+    lines.push('');
+  } else {
+    lines.push('## Remediation Log', '', '_No gaps or partial items._', '');
+  }
+
+  // Evidence checklist
+  const nonComp = results.filter(r => r.status !== 'compliant');
+  if (nonComp.length) {
+    lines.push('## Evidence Checklist', '', '_For items not marked compliant:_', '');
+    let curSec = null;
+    nonComp.forEach(r => {
+      if (r.check.section !== curSec) {
+        curSec = r.check.section;
+        lines.push(`**${SECTION_TITLES[curSec]}**`, '');
+      }
+      lines.push(`- **${r.check.id}** (${STATUS_LABEL[r.status]}): ${r.check.evidence}`);
+    });
+    lines.push('');
+  } else {
+    lines.push('## Evidence Checklist', '', '_All items compliant — no evidence gaps._', '');
+  }
+
+  // Caveats
+  lines.push('## Caveats', '');
+  lines.push('1. This checklist covers Art. 14 human oversight requirements only. Full EU AI Act compliance requires assessment of Arts. 9–15, 17, 26, and Annexes I–IV, among others.');
+  lines.push('2. This tool is not a substitute for legal advice. The EU AI Act is subject to ongoing regulatory guidance and Member State implementation.');
+  lines.push('3. Applicability of specific provisions (e.g., Art. 14(5) biometric requirements) depends on your system\'s classification and use case. Seek qualified legal and technical counsel.');
+  lines.push('4. \'Compliant\' answers are self-assessed declarations. They do not constitute a conformity assessment or notified body certification.');
+  lines.push('5. This report should be reviewed and updated whenever the system, its deployment context, or applicable regulations change materially.');
+  lines.push('');
+
+  lines.push('---', '');
+  lines.push('_This report was generated by an automated compliance checker tool and constitutes a self-assessment only. It does not constitute legal advice, a conformity assessment, or a certification of compliance with the EU AI Act or any other applicable law._', '');
+
+  const content = lines.join('\n');
+  const dateStr = ts.toISOString().slice(0,10);
+  const timeStr = ts.toTimeString().slice(0,8).replace(/:/g,'');
+  downloadFile(`report_${dateStr}_${timeStr}.md`, content, 'text/markdown');
+}
+
+function exportJSON() {
+  const results = state.checks.map(c => ({
+    check: c,
+    status: state.answers[c.id] || 'skipped',
+    note: state.notes[c.id] || '',
+  }));
+
+  const tally = { compliant:0, partial:0, gap:0, skipped:0 };
+  results.forEach(r => tally[r.status]++);
+  const nonSkipped = tally.compliant + tally.partial + tally.gap;
+
+  const output = {
+    meta: {
+      tool: 'EU AI Act Article 14 Human Oversight Dashboard',
+      system_name: state.systemName,
+      operator: state.operatorName,
+      timestamp: state.timestamp.toISOString(),
+      roles: state.roles,
+      sectors: state.sectors,
+    },
+    summary: {
+      total: results.length,
+      tally,
+      compliance_rate_pct: nonSkipped > 0 ? Math.round(tally.compliant/nonSkipped*100) : null,
+      overall_status: tally.gap > 0 ? 'non-compliant' : tally.partial > 0 ? 'conditionally-compliant' : 'compliant',
+    },
+    results,
+  };
+
+  const ts = state.timestamp;
+  const dateStr = ts.toISOString().slice(0,10);
+  const timeStr = ts.toTimeString().slice(0,8).replace(/:/g,'');
+  downloadFile(`report_${dateStr}_${timeStr}.json`, JSON.stringify(output, null, 2), 'application/json');
+}
+
+function downloadFile(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ══════════════════════════════════════════════════════════════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function resetAll() {
+  state = {
+    systemName: '', operatorName: '', roles: [], sectors: [],
+    hasBiometric: false, checks: [], answers: {}, notes: {},
+    currentIdx: 0, timestamp: null,
+  };
+  // Reset form
+  document.getElementById('system-name').value = '';
+  document.getElementById('operator-name').value = '';
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('#sectors-grid input').forEach(c => c.checked = false);
+  document.getElementById('biometric-note').style.display = 'none';
+  document.getElementById('start-btn').disabled = true;
+  showScreen('setup-screen');
+}
+</script>
+</body>
+</html>

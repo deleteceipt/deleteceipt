@@ -1,0 +1,58 @@
+section: cryptographic_erasure
+title: "Cryptographic Erasure"
+source: "Chapter 15.13"
+controls:
+  - id: per_user_encryption_keys
+    label: "Per-user or per-record encryption keys"
+    description: "Data at rest is encrypted with per-user or per-record keys, enabling cryptographic erasure by destroying the key"
+    weight: 1.0
+    remediation:
+      gap_label: "No per-user encryption keys"
+      risk_level: "Critical"
+      effort: "High"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.13"
+
+  - id: key_destruction_procedure
+    label: "Key destruction procedure documented and tested"
+    description: "A documented, tested procedure exists for destroying encryption keys, including KMS key deletion, HSM zeroization, or equivalent"
+    weight: 1.0
+    remediation:
+      gap_label: "No key destruction procedure"
+      risk_level: "Critical"
+      effort: "Medium"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.13"
+
+  - id: key_management_service
+    label: "Keys managed via auditable KMS"
+    description: "Encryption keys are managed via a hardware-backed or cloud KMS (AWS KMS, GCP Cloud KMS, Azure Key Vault, HashiCorp Vault) with full audit trail"
+    weight: 0.9
+    remediation:
+      gap_label: "Keys not managed via auditable KMS"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.13"
+
+  - id: crypto_erasure_receipt
+    label: "Cryptographic erasure event recorded in deletion receipt"
+    description: "Key destruction events are recorded in the deletion receipt with the key ID and destruction timestamp, providing auditable proof"
+    weight: 0.9
+    remediation:
+      gap_label: "Crypto erasure not recorded in receipt"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.13"
+
+  - id: ciphertext_retained_acknowledged
+    label: "Residual ciphertext retention documented"
+    description: "If ciphertext is retained after key destruction (e.g., in backups), this is documented as a residual risk with a plan to purge on backup expiry"
+    weight: 0.7
+    remediation:
+      gap_label: "Residual ciphertext retention not documented"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.13"

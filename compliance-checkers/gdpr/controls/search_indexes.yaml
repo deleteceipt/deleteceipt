@@ -1,0 +1,47 @@
+section: search_indexes
+title: "Search Index Deletion"
+source: "Chapter 15.2"
+controls:
+  - id: index_purge_on_delete
+    label: "Search index entries purged on deletion request"
+    description: "Elasticsearch, Solr, OpenSearch, or other search indexes are updated or rebuilt to remove personal data when a deletion request is processed"
+    weight: 1.0
+    remediation:
+      gap_label: "Search indexes not purged on deletion"
+      risk_level: "Critical"
+      effort: "Medium"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.2"
+
+  - id: full_text_search_coverage
+    label: "Full-text search fields covered"
+    description: "Free-text fields containing personal data are included in the deletion scope, not just structured fields"
+    weight: 0.9
+    remediation:
+      gap_label: "Full-text fields excluded from deletion"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.2"
+
+  - id: reindex_verification
+    label: "Post-deletion reindex or verification"
+    description: "After deletion, an automated process verifies or re-indexes to confirm the data is no longer searchable"
+    weight: 0.8
+    remediation:
+      gap_label: "No post-deletion index verification"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.2"
+
+  - id: derived_index_coverage
+    label: "Derived and aggregated indexes covered"
+    description: "Derived or aggregated search indexes (e.g., analytics search, semantic search embeddings) are also purged"
+    weight: 0.8
+    remediation:
+      gap_label: "Derived indexes not covered"
+      risk_level: "High"
+      effort: "High"
+      open_source_component: null
+      chapter_reference: "Ch. 15.2"

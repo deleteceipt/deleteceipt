@@ -1,0 +1,58 @@
+section: primary_storage
+title: "Primary Storage Deletion"
+source: "Chapter 15.1"
+controls:
+  - id: hard_delete_implementation
+    label: "Hard delete or wired hard-delete pipeline"
+    description: "Database physically removes rows, or soft deletes have a hard-delete pipeline that fires within a defined SLA"
+    weight: 1.0
+    remediation:
+      gap_label: "No hard delete implementation"
+      risk_level: "Critical"
+      effort: "Medium"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.1"
+
+  - id: soft_delete_pipeline
+    label: "Soft-delete → hard-delete pipeline"
+    description: "If soft deletes are used, an automated pipeline purges records after a defined retention window"
+    weight: 0.9
+    remediation:
+      gap_label: "Soft deletes never purged"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.1"
+
+  - id: coverage_completeness
+    label: "All data stores covered"
+    description: "Deletion logic covers every data store that holds personal data — primary DB, replicas, read-replicas, shards"
+    weight: 1.0
+    remediation:
+      gap_label: "Partial data store coverage"
+      risk_level: "High"
+      effort: "High"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.1"
+
+  - id: deletion_receipt_issuance
+    label: "Deletion receipt issued on completion"
+    description: "A cryptographically signed deletion receipt is issued after every erasure request, providing proof of deletion"
+    weight: 0.8
+    remediation:
+      gap_label: "No deletion receipt issued"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.1"
+
+  - id: monitoring
+    label: "Deletion monitoring and alerting"
+    description: "Deletion operations are monitored; failures trigger alerts and incident response"
+    weight: 0.7
+    remediation:
+      gap_label: "No deletion monitoring"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.1"

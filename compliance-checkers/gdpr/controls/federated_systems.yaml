@@ -1,0 +1,47 @@
+section: federated_systems
+title: "Federated and Distributed System Deletion"
+source: "Chapter 15.12"
+controls:
+  - id: federation_deletion_propagation
+    label: "Deletion propagated across all federated nodes"
+    description: "In federated architectures (multi-region, multi-tenant, microservices), a deletion event is reliably propagated to all nodes that hold copies of the data"
+    weight: 1.0
+    remediation:
+      gap_label: "Deletion not propagated to all federated nodes"
+      risk_level: "Critical"
+      effort: "High"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.12"
+
+  - id: eventual_consistency_sla
+    label: "Eventual-consistency deletion SLA defined"
+    description: "For eventually-consistent systems, the maximum lag before deletion propagates everywhere is defined, documented, and monitored"
+    weight: 0.9
+    remediation:
+      gap_label: "No deletion propagation SLA for eventual consistency"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.12"
+
+  - id: cross_region_compliance
+    label: "Cross-region deletion compliant with data residency rules"
+    description: "Deletion events crossing regions comply with data transfer restrictions; deletion commands are treated as instructions, not data exports"
+    weight: 0.8
+    remediation:
+      gap_label: "Cross-region deletion not compliant"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.12"
+
+  - id: microservice_choreography
+    label: "Microservice deletion choreography documented"
+    description: "A deletion workflow or saga pattern documents which microservices must be called and in what order to complete an erasure"
+    weight: 0.8
+    remediation:
+      gap_label: "No microservice deletion choreography"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.12"

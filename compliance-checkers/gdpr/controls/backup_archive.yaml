@@ -1,0 +1,58 @@
+section: backup_archive
+title: "Backup and Archive Deletion"
+source: "Chapter 15.5"
+controls:
+  - id: backup_purge_procedure
+    label: "Backup purge procedure documented and tested"
+    description: "A documented, tested procedure exists for removing personal data from backups, either by restore-delete-reback or cryptographic erasure"
+    weight: 1.0
+    remediation:
+      gap_label: "No backup purge procedure"
+      risk_level: "Critical"
+      effort: "High"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.5"
+
+  - id: backup_retention_policy
+    label: "Backup retention policy aligned with erasure obligations"
+    description: "Backup retention schedule is documented; backups older than the retention window are purged automatically"
+    weight: 0.9
+    remediation:
+      gap_label: "Backup retention policy missing or misaligned"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.5"
+
+  - id: archive_cryptographic_erasure
+    label: "Cryptographic erasure for long-term archives"
+    description: "Long-term archives use per-user encryption keys; erasure is achieved by destroying the key, making data unrecoverable"
+    weight: 1.0
+    remediation:
+      gap_label: "No cryptographic erasure for archives"
+      risk_level: "High"
+      effort: "High"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.5"
+
+  - id: backup_inventory
+    label: "Backup and archive inventory maintained"
+    description: "A current inventory of all backups and archives containing personal data is maintained, including location, format, and retention date"
+    weight: 0.8
+    remediation:
+      gap_label: "No backup inventory"
+      risk_level: "Medium"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.5"
+
+  - id: immutable_backup_controls
+    label: "Immutable backups handled via legal-hold exception only"
+    description: "WORM/immutable backups are accounted for; personal data in immutable storage is managed through legal-hold exception and compensating controls"
+    weight: 0.7
+    remediation:
+      gap_label: "Immutable backups not addressed"
+      risk_level: "Medium"
+      effort: "High"
+      open_source_component: null
+      chapter_reference: "Ch. 15.5"

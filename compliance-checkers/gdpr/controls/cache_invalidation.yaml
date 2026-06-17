@@ -1,0 +1,47 @@
+section: cache_invalidation
+title: "Cache Invalidation"
+source: "Chapter 15.3"
+controls:
+  - id: cache_flush_on_delete
+    label: "Cache entries flushed on deletion request"
+    description: "Redis, Memcached, CDN caches, and in-process caches are invalidated when a data deletion request is processed"
+    weight: 1.0
+    remediation:
+      gap_label: "Cache not flushed on deletion"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.3"
+
+  - id: cache_ttl_policy
+    label: "Cache TTL bounded and documented"
+    description: "All caches holding personal data have a documented maximum TTL that limits re-exposure after deletion"
+    weight: 0.8
+    remediation:
+      gap_label: "Unbounded cache TTL for personal data"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.3"
+
+  - id: cdn_purge_capability
+    label: "CDN/edge cache purge capability"
+    description: "CDN or edge caches can be purged programmatically per user or per content item, not only globally"
+    weight: 0.9
+    remediation:
+      gap_label: "No targeted CDN purge capability"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.3"
+
+  - id: cache_inventory
+    label: "Cache inventory maintained"
+    description: "A complete inventory of all caches that may hold personal data is documented and kept current"
+    weight: 0.7
+    remediation:
+      gap_label: "No cache inventory"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.3"

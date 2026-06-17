@@ -1,0 +1,58 @@
+section: legal_hold_procedures
+title: "Legal Hold Procedures"
+source: "Chapter 15.11"
+controls:
+  - id: legal_hold_system
+    label: "Legal hold system integrated with deletion pipeline"
+    description: "A legal hold system can flag records to prevent erasure when deletion would violate a litigation hold or statutory retention obligation"
+    weight: 1.0
+    remediation:
+      gap_label: "No legal hold system"
+      risk_level: "Critical"
+      effort: "High"
+      open_source_component: null
+      chapter_reference: "Ch. 15.11"
+
+  - id: erasure_refusal_notification
+    label: "Data subject notified when erasure request refused due to legal hold"
+    description: "When an erasure request is refused because of a legal hold, the data subject is notified of the refusal and the legal basis within the required timeframe"
+    weight: 0.9
+    remediation:
+      gap_label: "Erasure refusal not communicated to data subject"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.11"
+
+  - id: hold_scope_minimisation
+    label: "Legal hold scoped to minimum data necessary"
+    description: "Legal holds are scoped to the minimum data categories and individuals required; data outside the hold scope is still deleted on request"
+    weight: 0.8
+    remediation:
+      gap_label: "Legal holds applied too broadly"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.11"
+
+  - id: hold_release_procedure
+    label: "Legal hold release triggers immediate deletion"
+    description: "When a legal hold is released, queued erasure requests are automatically processed without requiring a new request from the data subject"
+    weight: 0.9
+    remediation:
+      gap_label: "Hold release does not trigger queued deletions"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.11"
+
+  - id: hold_documentation
+    label: "Legal hold decisions documented"
+    description: "Legal holds are documented with the legal basis, scope, authorising counsel, and expected duration; reviewed at least quarterly"
+    weight: 0.7
+    remediation:
+      gap_label: "Legal hold decisions not documented"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.11"

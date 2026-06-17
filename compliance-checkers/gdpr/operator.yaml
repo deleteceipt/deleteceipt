@@ -1,0 +1,89 @@
+# GDPR Compliance Checker — Operator Configuration
+organization_id: "org_example_hash"
+vertical: "general_saas"
+signing_key_env: "GDPR_SIGNING_KEY"  # env var name (or use signing_key: "literal-key-for-testing")
+signing_key_id: "compliance-checker/v1/2026-01-01"
+ci_threshold: 50  # exit code 1 if overall_score < this
+
+# Pre-configured answers for automated runs.
+# Each control scored 0-4. Omitted controls default to 0.
+# Control IDs must match the 'id' fields in controls/*.yaml.
+answers:
+  primary_storage:
+    hard_delete_implementation: 4
+    soft_delete_pipeline: 3
+    coverage_completeness: 3
+    deletion_receipt_issuance: 4
+    monitoring: 3
+  search_indexes:
+    index_purge_on_delete: 3
+    full_text_search_coverage: 2
+    reindex_verification: 2
+    derived_index_coverage: 2
+  cache_invalidation:
+    cache_flush_on_delete: 3
+    cache_ttl_policy: 3
+    cdn_purge_capability: 2
+    cache_inventory: 3
+  message_queues:
+    queue_retention_bounded: 3
+    event_tombstoning: 2
+    consumer_notification: 2
+    dead_letter_queue_purge: 2
+  backup_archive:
+    backup_purge_procedure: 2
+    backup_retention_policy: 3
+    archive_cryptographic_erasure: 2
+    backup_inventory: 2
+    immutable_backup_controls: 2
+  logs_observability:
+    log_pseudonymisation: 2
+    log_retention_policy: 3
+    trace_pii_scrubbing: 2
+    metrics_no_pii: 2
+    log_access_controls: 3
+  third_party_processors:
+    dpa_deletion_clause: 3
+    processor_deletion_confirmation: 2
+    processor_inventory: 3
+    processor_audit_rights: 2
+  ml_models:
+    training_data_lineage: 2
+    model_retraining_on_deletion: 1
+    embedding_deletion: 1
+    model_version_retention: 2
+    differential_privacy_consideration: 1
+  deletion_receipt_issuance:
+    receipt_issued_for_every_request: 3
+    receipt_cryptographic_integrity: 3
+    receipt_scope_documented: 2
+    receipt_retention: 2
+    receipt_verifiability: 2
+  audit_log_integrity:
+    audit_log_for_all_deletions: 3
+    audit_log_tamper_protection: 2
+    audit_log_retention: 3
+    audit_log_access_controls: 3
+  legal_hold_procedures:
+    legal_hold_system: 2
+    erasure_refusal_notification: 2
+    hold_scope_minimisation: 1
+    hold_release_procedure: 2
+    hold_documentation: 2
+  federated_systems:
+    federation_deletion_propagation: 2
+    eventual_consistency_sla: 1
+    cross_region_compliance: 2
+    microservice_choreography: 1
+  cryptographic_erasure:
+    per_user_encryption_keys: 2
+    key_destruction_procedure: 2
+    key_management_service: 2
+    crypto_erasure_receipt: 2
+    ciphertext_retained_acknowledged: 2
+  deletion_testing:
+    automated_deletion_tests: 3
+    periodic_deletion_drills: 2
+    residual_data_scanning: 2
+    deletion_sla_monitoring: 2
+    test_coverage_documentation: 2

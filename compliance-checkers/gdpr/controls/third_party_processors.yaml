@@ -1,0 +1,47 @@
+section: third_party_processors
+title: "Third-Party Processor Deletion"
+source: "Chapter 15.7"
+controls:
+  - id: dpa_deletion_clause
+    label: "DPA includes deletion obligation and SLA"
+    description: "Data Processing Agreements with all sub-processors include an explicit erasure obligation with a defined SLA (e.g., 30 days)"
+    weight: 1.0
+    remediation:
+      gap_label: "DPA missing deletion clause or SLA"
+      risk_level: "Critical"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.7"
+
+  - id: processor_deletion_confirmation
+    label: "Sub-processor deletion confirmation received"
+    description: "Upon erasure request, sub-processors provide written confirmation or a machine-readable receipt that data has been deleted"
+    weight: 0.9
+    remediation:
+      gap_label: "No deletion confirmation from sub-processors"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.7"
+
+  - id: processor_inventory
+    label: "Sub-processor inventory maintained"
+    description: "A current inventory of all sub-processors and the personal data categories they process is maintained and reviewed annually"
+    weight: 0.8
+    remediation:
+      gap_label: "Sub-processor inventory incomplete"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.7"
+
+  - id: processor_audit_rights
+    label: "Audit rights exercised for high-risk processors"
+    description: "Audit rights in DPAs are exercised periodically for high-risk sub-processors; audit findings are documented"
+    weight: 0.7
+    remediation:
+      gap_label: "Audit rights never exercised"
+      risk_level: "Medium"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.7"

@@ -1,0 +1,58 @@
+section: ml_models
+title: "ML Model Data Deletion"
+source: "Chapter 15.8"
+controls:
+  - id: training_data_lineage
+    label: "Training data lineage tracked per individual"
+    description: "A record is maintained of which individuals' data was used to train each model version, enabling targeted unlearning or retraining"
+    weight: 1.0
+    remediation:
+      gap_label: "No training data lineage tracking"
+      risk_level: "Critical"
+      effort: "High"
+      open_source_component: null
+      chapter_reference: "Ch. 15.8"
+
+  - id: model_retraining_on_deletion
+    label: "Model retrained or unlearned on deletion request"
+    description: "When a subject requests erasure, affected models are either retrained without the subject's data or machine-unlearning techniques are applied"
+    weight: 1.0
+    remediation:
+      gap_label: "Models not retrained or unlearned on erasure"
+      risk_level: "Critical"
+      effort: "High"
+      open_source_component: null
+      chapter_reference: "Ch. 15.8"
+
+  - id: embedding_deletion
+    label: "Vector embeddings purged on deletion"
+    description: "Vector databases (Pinecone, Weaviate, pgvector, etc.) containing personal data embeddings are purged when the source data is deleted"
+    weight: 0.9
+    remediation:
+      gap_label: "Vector embeddings not purged"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.8"
+
+  - id: model_version_retention
+    label: "Old model versions purged or access-controlled"
+    description: "Older model versions that memorised personal data are deleted or access-restricted after retraining"
+    weight: 0.8
+    remediation:
+      gap_label: "Old model versions retained without access control"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.8"
+
+  - id: differential_privacy_consideration
+    label: "Differential privacy evaluated for future training"
+    description: "Differential privacy or other privacy-preserving ML techniques are evaluated or applied to reduce the erasure burden on future models"
+    weight: 0.6
+    remediation:
+      gap_label: "Differential privacy not evaluated"
+      risk_level: "Low"
+      effort: "High"
+      open_source_component: null
+      chapter_reference: "Ch. 15.8"

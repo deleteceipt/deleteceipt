@@ -1,0 +1,58 @@
+section: deletion_testing
+title: "Deletion Testing and Verification"
+source: "Chapter 15.14"
+controls:
+  - id: automated_deletion_tests
+    label: "Automated tests verify deletion end-to-end"
+    description: "Automated integration or end-to-end tests exercise the deletion pipeline and assert that data is no longer retrievable from all systems after erasure"
+    weight: 1.0
+    remediation:
+      gap_label: "No automated deletion tests"
+      risk_level: "Critical"
+      effort: "Medium"
+      open_source_component: "deleteceipt"
+      chapter_reference: "Ch. 15.14"
+
+  - id: periodic_deletion_drills
+    label: "Periodic deletion drills in production-like environment"
+    description: "Deletion drills are conducted periodically (at least annually) in a production-like environment to validate the entire deletion pipeline"
+    weight: 0.9
+    remediation:
+      gap_label: "No periodic deletion drills"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.14"
+
+  - id: residual_data_scanning
+    label: "Residual data scanning after deletion"
+    description: "After deletion, automated scans check for residual personal data across all stores — databases, search indexes, caches, and backups"
+    weight: 0.9
+    remediation:
+      gap_label: "No residual data scanning"
+      risk_level: "High"
+      effort: "High"
+      open_source_component: null
+      chapter_reference: "Ch. 15.14"
+
+  - id: deletion_sla_monitoring
+    label: "Deletion SLA monitored and reported"
+    description: "Time-to-delete is measured for every erasure request; SLA breaches trigger alerts and are tracked in a compliance dashboard"
+    weight: 0.8
+    remediation:
+      gap_label: "Deletion SLA not monitored"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.14"
+
+  - id: test_coverage_documentation
+    label: "Deletion test coverage documented"
+    description: "Deletion test coverage is documented, including which systems are tested, which are excluded, and why; gaps are tracked to closure"
+    weight: 0.7
+    remediation:
+      gap_label: "Deletion test coverage not documented"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.14"

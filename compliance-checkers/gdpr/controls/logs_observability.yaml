@@ -1,0 +1,58 @@
+section: logs_observability
+title: "Logs and Observability Data"
+source: "Chapter 15.6"
+controls:
+  - id: log_pseudonymisation
+    label: "Personal data pseudonymised in logs"
+    description: "Application and infrastructure logs replace personal identifiers with pseudonymous tokens or hashes before ingestion into log aggregators"
+    weight: 1.0
+    remediation:
+      gap_label: "Personal data in plaintext logs"
+      risk_level: "Critical"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.6"
+
+  - id: log_retention_policy
+    label: "Log retention policy defined and enforced"
+    description: "Logs have a defined maximum retention period; automatic deletion or archival runs on schedule"
+    weight: 0.9
+    remediation:
+      gap_label: "Logs retained indefinitely"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.6"
+
+  - id: trace_pii_scrubbing
+    label: "Distributed traces scrubbed of PII"
+    description: "Distributed tracing systems (Jaeger, Zipkin, Datadog APM) do not capture personal data in span attributes or trace baggage"
+    weight: 0.8
+    remediation:
+      gap_label: "PII present in distributed traces"
+      risk_level: "High"
+      effort: "Medium"
+      open_source_component: null
+      chapter_reference: "Ch. 15.6"
+
+  - id: metrics_no_pii
+    label: "Metrics and dashboards free of PII"
+    description: "Prometheus metrics, Grafana dashboards, and other observability tools do not use personal identifiers as label values"
+    weight: 0.7
+    remediation:
+      gap_label: "PII used as metric label values"
+      risk_level: "Medium"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.6"
+
+  - id: log_access_controls
+    label: "Log access controls restrict personal data exposure"
+    description: "Access to log systems is role-based; personal data in logs is accessible only to authorized roles with a documented need"
+    weight: 0.8
+    remediation:
+      gap_label: "Broad unrestricted log access"
+      risk_level: "High"
+      effort: "Low"
+      open_source_component: null
+      chapter_reference: "Ch. 15.6"
